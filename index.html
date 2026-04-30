@@ -56,11 +56,11 @@
   tr:hover td{background:rgba(201,168,76,.04)}
   tr.tot td{background:var(--gold-muted);color:var(--gold);font-weight:500;border-top:1px solid var(--gold-dim)}
   pre{background:#060504;border:1px solid var(--border);border-radius:var(--radius);padding:20px;font-size:11px;overflow-x:auto;color:#8a9e6e;line-height:1.8;white-space:pre}
-  .sk{color:var(--gold)}.st{color:#7eb8d4}.sc{color:var(--text-dim)}
+  .sk{color:var(--gold)}.xt{color:#7eb8d4}.xc{color:var(--text-dim)}
   .fr{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;margin-bottom:20px}
   .fr .f{min-width:140px}
   .sg{display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:12px;margin-bottom:24px}
-  .sc2{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px}
+  .sc{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px}
   .sl{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-dim);margin-bottom:6px}
   .sv{font-family:'Playfair Display',serif;font-size:22px;color:var(--gold);line-height:1}
   .ss{font-size:10px;color:var(--text-dim);margin-top:4px}
@@ -74,20 +74,27 @@
   .steps{counter-reset:step}
   .step{display:flex;gap:16px;margin-bottom:20px;align-items:flex-start}
   .sn{counter-increment:step;background:var(--gold);color:#1a1005;width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;flex-shrink:0;margin-top:2px}
-  .sb{flex:1}.st2{color:var(--cream);font-size:13px;margin-bottom:4px}.sd{color:var(--text-dim);font-size:11px;line-height:1.7}
+  .sb{flex:1}.st2{color:var(--cream);font-size:13px;margin-bottom:4px}.sd{color:var(--text-dim);font-size:11px;line-height:1.8}
   .sd a{color:var(--gold);text-decoration:none}.sd a:hover{text-decoration:underline}
-  .cb{background:#060504;border:1px solid var(--border);border-radius:var(--radius);padding:12px 16px;font-size:11px;color:#8a9e6e;margin:8px 0;overflow-x:auto;white-space:pre}
+  .sd strong{color:var(--cream)}
+  .cb{background:#060504;border:1px solid var(--border);border-radius:var(--radius);padding:10px 14px;font-size:11px;color:#8a9e6e;margin:6px 0;overflow-x:auto;white-space:pre;display:block}
   .hl{color:var(--gold)}
   .cs2{display:inline-flex;align-items:center;gap:8px;font-size:12px}
   .cd{width:8px;height:8px;border-radius:50%;background:var(--text-dim)}
   .cd.ok{background:var(--green);box-shadow:0 0 6px var(--green)}.cd.er{background:var(--red)}
+  /* ENV VAR TABLE */
+  .env-table{width:100%;border-collapse:collapse;font-size:12px;margin:12px 0}
+  .env-table th{background:var(--surface);color:var(--text-dim);font-size:10px;letter-spacing:.1em;text-transform:uppercase;padding:8px 12px;text-align:left;border-bottom:1px solid var(--border)}
+  .env-table td{padding:8px 12px;border-bottom:1px solid var(--border);color:var(--cream-dim)}
+  .env-table td:first-child{color:var(--gold);font-family:'DM Mono',monospace;font-size:11px}
+  .env-table td:nth-child(2){color:var(--text-dim)}
   @media(max-width:800px){header,nav,main{padding-left:20px;padding-right:20px}.fg{grid-template-columns:1fr 1fr}}
 </style>
 </head>
 <body>
 <header>
   <h1>Libro Cassa</h1>
-  <span>Budget Ristorante · Neon Postgres</span>
+  <span>Budget Ristorante · Vercel + Neon</span>
 </header>
 <nav>
   <button class="active" onclick="sw('setup',this)">⚙ Config</button>
@@ -99,83 +106,109 @@
 
 <!-- ══ SETUP ══ -->
 <div id="tab-setup" class="tab-pane active">
-  <h2>Configurazione Neon</h2>
-  <p class="subtitle">PostgreSQL gratuito — fino a 20 progetti, 0.5 GB ciascuno, nessuna carta di credito, non scade mai.</p>
+  <h2>Configurazione</h2>
+  <p class="subtitle">La pagina gira su Vercel e chiama il database Neon tramite una funzione serverless — nessuna credenziale nel browser.</p>
 
   <div class="card">
-    <h3>Guida rapida — 5 minuti</h3>
-    <div class="steps">
-      <div class="step"><div class="sn"></div><div class="sb">
-        <div class="st2">Registrati su Neon (gratis)</div>
-        <div class="sd">Vai su <a href="https://neon.tech" target="_blank">neon.tech</a> → Sign Up. Nessuna carta richiesta.</div>
-      </div></div>
-      <div class="step"><div class="sn"></div><div class="sb">
-        <div class="st2">Crea un nuovo progetto</div>
-        <div class="sd">Dashboard → <strong>New Project</strong>. Nome: "ristorante". Regione consigliata: <strong>Europe (Frankfurt)</strong>.</div>
-      </div></div>
-      <div class="step"><div class="sn"></div><div class="sb">
-        <div class="st2">Copia la connection string</div>
-        <div class="sd">Progetto → <strong>Connection Details</strong> → seleziona <em>Connection string</em>. Formato:
-          <div class="cb">postgresql://<span class="hl">user</span>:<span class="hl">password</span>@<span class="hl">ep-xxx.eu-central-1.aws.neon.tech</span>/neondb</div>
-          Ti servono: <strong>host</strong>, <strong>utente</strong>, <strong>password</strong>.
-        </div>
-      </div></div>
-      <div class="step"><div class="sn"></div><div class="sb">
-        <div class="st2">Crea la tabella nel SQL Editor</div>
-        <div class="sd">Dashboard → <strong>SQL Editor</strong> → incolla lo schema qui sotto → <strong>Run</strong>.</div>
-      </div></div>
-      <div class="step"><div class="sn"></div><div class="sb">
-        <div class="st2">Inserisci le credenziali e testa</div>
-        <div class="sd">Compila i campi nella sezione Credenziali e clicca "Testa Connessione".</div>
-      </div></div>
+    <h3>Architettura</h3>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;font-size:12px;color:var(--text-dim);text-align:center;letter-spacing:.05em">
+      <span style="color:var(--cream)">Browser</span>
+      <span style="margin:0 12px;color:var(--gold-dim)">→ POST /api/sql →</span>
+      <span style="color:var(--cream)">Vercel Function</span>
+      <span style="margin:0 12px;color:var(--gold-dim)">→ HTTPS →</span>
+      <span style="color:var(--cream)">Neon Postgres</span>
+    </div>
+    <div style="margin-top:12px;font-size:11px;color:var(--text-dim);line-height:1.8">
+      ✓ Nessun problema CORS — browser e API sono sullo stesso dominio Vercel<br>
+      ✓ Credenziali Neon nelle variabili d'ambiente di Vercel, mai nel browser<br>
+      ✓ Tutto nella stessa repo GitHub già creata
     </div>
   </div>
 
   <div class="card">
-    <h3>Credenziali Neon</h3>
-    <div class="fg">
-      <div style="grid-column:1/-1">
-        <label>Host (es. ep-xxx.eu-central-1.aws.neon.tech)</label>
-        <input type="text" id="n-host" placeholder="ep-silent-fog-12345678.eu-central-1.aws.neon.tech" oninput="saveCfg()">
-      </div>
-      <div><label>Database</label><input type="text" id="n-db" value="neondb" oninput="saveCfg()"></div>
-      <div><label>Utente</label><input type="text" id="n-user" placeholder="neondb_owner" oninput="saveCfg()"></div>
-      <div><label>Password</label><input type="password" id="n-pass" placeholder="••••••••••" oninput="saveCfg()"></div>
+    <h3>Guida configurazione — 10 minuti</h3>
+    <div class="steps">
+
+      <div class="step"><div class="sn"></div><div class="sb">
+        <div class="st2">Aggiungi <code style="color:var(--gold)">api/sql.js</code> alla tua repo GitHub</div>
+        <div class="sd">Nella repo <strong>ristorante-cassa</strong> su GitHub:<br>
+        → Clicca <strong>"Add file" → "Create new file"</strong><br>
+        → Nome file: <strong>api/sql.js</strong> (scrivi esattamente così, con lo slash — GitHub creerà la cartella <code>api</code> automaticamente)<br>
+        → Incolla il contenuto del file <strong>worker.js</strong> che hai scaricato (è già il codice giusto per Vercel, nonostante il nome)<br>
+        → Commit changes
+        </div>
+      </div></div>
+
+      <div class="step"><div class="sn"></div><div class="sb">
+        <div class="st2">Registrati su Vercel e importa la repo</div>
+        <div class="sd">Vai su <a href="https://vercel.com" target="_blank">vercel.com</a> → Sign Up con il tuo account GitHub.<br>
+        Dashboard → <strong>"Add New Project"</strong> → <strong>"Import Git Repository"</strong><br>
+        → Seleziona <strong>ristorante-cassa</strong><br>
+        → Framework Preset: lascia <strong>"Other"</strong><br>
+        → Clicca <strong>Deploy</strong> (la prima volta fallirà o mostrerà solo l'HTML — va bene, dobbiamo ancora aggiungere le variabili)
+        </div>
+      </div></div>
+
+      <div class="step"><div class="sn"></div><div class="sb">
+        <div class="st2">Aggiungi le variabili d'ambiente Neon</div>
+        <div class="sd">Nel progetto Vercel → <strong>Settings → Environment Variables</strong><br>
+        Aggiungi queste 4 variabili (valori dalla dashboard Neon → Connect):
+        <table class="env-table" style="margin-top:10px">
+          <thead><tr><th>Nome variabile</th><th>Valore (esempio)</th><th>Dove trovarlo</th></tr></thead>
+          <tbody>
+            <tr><td>NEON_HOST</td><td style="color:var(--text-dim)">ep-xxx.eu-central-1.aws.neon.tech</td><td>Parte dopo @ nella connection string</td></tr>
+            <tr><td>NEON_USER</td><td style="color:var(--text-dim)">neondb_owner</td><td>Parte prima dei : nella connection string</td></tr>
+            <tr><td>NEON_PASS</td><td style="color:var(--text-dim)">AbCdEf123456...</td><td>Parte tra : e @ nella connection string</td></tr>
+            <tr><td>NEON_DB</td><td style="color:var(--text-dim)">neondb</td><td>Parte finale dopo / nella connection string</td></tr>
+          </tbody>
+        </table>
+        Dopo aver aggiunto le variabili → <strong>Deployments → Redeploy</strong> (l'ultimo deployment).
+        </div>
+      </div></div>
+
+      <div class="step"><div class="sn"></div><div class="sb">
+        <div class="st2">Crea la tabella nel SQL Editor di Neon</div>
+        <div class="sd">Se non l'hai già fatto: dashboard Neon → <strong>SQL Editor</strong> → incolla lo schema qui sotto → <strong>Run</strong>.</div>
+      </div></div>
+
+      <div class="step"><div class="sn"></div><div class="sb">
+        <div class="st2">Testa la connessione</div>
+        <div class="sd">Clicca il pulsante qui sotto. Se vedi il messaggio verde, tutto funziona.</div>
+      </div></div>
+
     </div>
-    <div class="btn-row">
+
+    <div class="btn-row" style="margin-top:8px">
       <button class="btn btn-p" onclick="testConn()">⚡ Testa Connessione</button>
-      <button class="btn btn-s" onclick="clearCfg()">✕ Cancella</button>
-      <span class="cs2"><span class="cd" id="cd"></span><span id="ct" style="color:var(--text-dim)">Non collegato</span></span>
+      <span class="cs2"><span class="cd" id="cd"></span><span id="ct" style="color:var(--text-dim)">Non testato</span></span>
     </div>
     <div id="ca" class="alert" style="margin-top:12px"></div>
   </div>
 
   <div class="card">
-    <h3>Schema SQL — incolla nell'SQL Editor di Neon</h3>
-    <pre id="sql-schema">
-<span class="sc">-- Tabella principale: un record per ogni giornata operativa</span>
+    <h3>Schema SQL — incolla nel SQL Editor di Neon</h3>
+    <pre id="sql-schema"><span class="xc">-- Un record per ogni giornata operativa del ristorante</span>
 <span class="sk">CREATE TABLE IF NOT EXISTS</span> incassi_giornalieri (
-  id          <span class="st">UUID</span>          <span class="sk">PRIMARY KEY DEFAULT</span> gen_random_uuid(),
-  data        <span class="st">DATE</span>          <span class="sk">NOT NULL UNIQUE</span>,
-  pranzo      <span class="st">NUMERIC(10,2)</span>,
-  cena        <span class="st">NUMERIC(10,2)</span>,
-  totale      <span class="st">NUMERIC(10,2)</span>,
-  corrisp     <span class="st">NUMERIC(10,2)</span>,
-  pos         <span class="st">NUMERIC(10,2)</span>,
-  banca       <span class="st">NUMERIC(10,2)</span>,
-  cassa       <span class="st">NUMERIC(10,2)</span>,
-  ft          <span class="st">NUMERIC(10,2)</span>,
-  cp          <span class="st">SMALLINT</span>,
-  cs          <span class="st">SMALLINT</span>,
-  media_p     <span class="st">NUMERIC(8,2)</span>,
-  media_s     <span class="st">NUMERIC(8,2)</span>,
-  note        <span class="st">TEXT</span>,
-  created_at  <span class="st">TIMESTAMPTZ</span> <span class="sk">DEFAULT</span> now()
+  id          <span class="xt">UUID</span>          <span class="sk">PRIMARY KEY DEFAULT</span> gen_random_uuid(),
+  data        <span class="xt">DATE</span>          <span class="sk">NOT NULL UNIQUE</span>,
+  pranzo      <span class="xt">NUMERIC(10,2)</span>,   <span class="xc">-- incasso pranzo</span>
+  cena        <span class="xt">NUMERIC(10,2)</span>,   <span class="xc">-- incasso cena</span>
+  totale      <span class="xt">NUMERIC(10,2)</span>,   <span class="xc">-- totale giornata</span>
+  corrisp     <span class="xt">NUMERIC(10,2)</span>,   <span class="xc">-- corrispettivi</span>
+  pos         <span class="xt">NUMERIC(10,2)</span>,   <span class="xc">-- POS / carta</span>
+  banca       <span class="xt">NUMERIC(10,2)</span>,   <span class="xc">-- bonifici</span>
+  cassa       <span class="xt">NUMERIC(10,2)</span>,   <span class="xc">-- contante</span>
+  ft          <span class="xt">NUMERIC(10,2)</span>,   <span class="xc">-- fatture</span>
+  cp          <span class="xt">SMALLINT</span>,        <span class="xc">-- coperti pranzo</span>
+  cs          <span class="xt">SMALLINT</span>,        <span class="xc">-- coperti sera</span>
+  media_p     <span class="xt">NUMERIC(8,2)</span>,    <span class="xc">-- scontrino medio pranzo</span>
+  media_s     <span class="xt">NUMERIC(8,2)</span>,    <span class="xc">-- scontrino medio sera</span>
+  note        <span class="xt">TEXT</span>,
+  created_at  <span class="xt">TIMESTAMPTZ</span> <span class="sk">DEFAULT</span> now()
 );
 <span class="sk">CREATE INDEX IF NOT EXISTS</span> idx_ig_data <span class="sk">ON</span> incassi_giornalieri(data);
 <span class="sk">CREATE INDEX IF NOT EXISTS</span> idx_ig_anno <span class="sk">ON</span> incassi_giornalieri(EXTRACT(YEAR FROM data));
-<span class="sk">CREATE INDEX IF NOT EXISTS</span> idx_ig_dow  <span class="sk">ON</span> incassi_giornalieri(EXTRACT(DOW FROM data));
-</pre>
+<span class="sk">CREATE INDEX IF NOT EXISTS</span> idx_ig_dow  <span class="sk">ON</span> incassi_giornalieri(EXTRACT(DOW FROM data));</pre>
     <br><button class="btn btn-s" onclick="copySQL()">📋 Copia SQL</button>
   </div>
 </div>
@@ -199,8 +232,8 @@
     <div><label>Fatture</label><input type="number" id="f-ft" step="0.5" min="0" placeholder="0.00"></div>
   </div></div>
   <div class="card"><h3>Coperti &amp; Medie</h3><div class="fg">
-    <div><label>Coperti Pranzo</label><input type="number" id="f-cp" min="0" placeholder="0"></div>
-    <div><label>Coperti Sera</label><input type="number" id="f-cs" min="0" placeholder="0"></div>
+    <div><label>Coperti Pranzo (CP)</label><input type="number" id="f-cp" min="0" placeholder="0"></div>
+    <div><label>Coperti Sera (CS)</label><input type="number" id="f-cs" min="0" placeholder="0"></div>
     <div><label>Media Pranzo (€/cop.)</label><input type="number" id="f-mp" step="0.5" min="0" placeholder="0.00"></div>
     <div><label>Media Sera (€/cop.)</label><input type="number" id="f-ms" step="0.5" min="0" placeholder="0.00"></div>
   </div></div>
@@ -226,13 +259,13 @@
     <div><label>&nbsp;</label><button class="btn btn-s" onclick="loadList()">🔄 Aggiorna</button></div>
   </div>
   <div id="la" class="alert"></div>
-  <div id="lc"><div class="es"><div class="ic">📒</div>Clicca Aggiorna dopo aver configurato Neon.</div></div>
+  <div id="lc"><div class="es"><div class="ic">📒</div>Configura Vercel e clicca Aggiorna.</div></div>
 </div>
 
 <!-- ══ REPORTS ══ -->
 <div id="tab-reports" class="tab-pane">
   <h2>Report &amp; Analisi</h2>
-  <p class="subtitle">Usa SQL diretto su Neon — nessuna limitazione sulle query.</p>
+  <p class="subtitle">Query SQL dirette su Neon — nessuna limitazione.</p>
   <div id="ra" class="alert"></div>
 
   <div class="card">
@@ -243,7 +276,7 @@
         <option value="0">Domenica</option><option value="1">Lunedì</option><option value="2">Martedì</option>
         <option value="3">Mercoledì</option><option value="4">Giovedì</option><option value="5">Venerdì</option><option value="6">Sabato</option>
       </select></div>
-      <div class="f"><label>Anni (vuoto=tutti, es: 2019,2021)</label><input type="text" id="r1-a" placeholder="2019,2020"></div>
+      <div class="f"><label>Anni (vuoto=tutti)</label><input type="text" id="r1-a" placeholder="2019,2020,2022"></div>
       <div class="f"><label>Campo</label><select id="r1-c">
         <option value="totale">Totale</option><option value="pranzo">Pranzo</option><option value="cena">Cena</option>
       </select></div>
@@ -305,143 +338,133 @@
 </main>
 
 <script>
-// ─── CONFIG ───────────────────────────────────────
-let C={host:'',db:'neondb',user:'',pass:''};
-function saveCfg(){
-  C.host=document.getElementById('n-host').value.trim().replace(/^https?:\/\//,'');
-  C.db  =document.getElementById('n-db').value.trim()||'neondb';
-  C.user=document.getElementById('n-user').value.trim();
-  C.pass=document.getElementById('n-pass').value.trim();
-  localStorage.setItem('nc',JSON.stringify(C));
-}
-function loadCfg(){
-  try{const s=localStorage.getItem('nc');if(s)C=JSON.parse(s);}catch{}
-  if(C.host)document.getElementById('n-host').value=C.host;
-  if(C.db)  document.getElementById('n-db').value=C.db;
-  if(C.user)document.getElementById('n-user').value=C.user;
-  if(C.pass)document.getElementById('n-pass').value=C.pass;
-}
-function clearCfg(){
-  localStorage.removeItem('nc');C={host:'',db:'neondb',user:'',pass:''};
-  ['n-host','n-user','n-pass'].forEach(id=>document.getElementById(id).value='');
-  document.getElementById('n-db').value='neondb';setCS(null);
-}
-// ─── NEON HTTP SQL API ─────────────────────────────
-async function sql(query,params=[]){
-  if(!C.host||!C.user||!C.pass)throw new Error('Configura Neon prima di procedere (tab Config).');
-  const auth=btoa(C.user+':'+C.pass);
-  const res=await fetch('https://'+C.host+'/sql',{
-    method:'POST',
-    headers:{
-      'Content-Type':'application/json',
-      'Authorization':'Basic '+auth,
-      'Neon-Connection-String':'postgresql://'+C.user+':'+C.pass+'@'+C.host+'/'+C.db+'?sslmode=require'
-    },
-    body:JSON.stringify({query,params})
+// ─── SQL via Vercel Function ───────────────────────────────────
+// Il browser chiama /api/sql — nessuna credenziale nel browser.
+// Le credenziali Neon sono nelle variabili d'ambiente di Vercel.
+async function sql(query, params = []) {
+  const res = await fetch('/api/sql', {
+    method:  'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body:    JSON.stringify({ query, params }),
   });
-  const d=await res.json();
-  if(!res.ok)throw new Error(d.message||d.detail||'HTTP '+res.status);
+  const d = await res.json();
+  if (!res.ok) throw new Error(d.message || 'HTTP ' + res.status);
   return d;
 }
-async function testConn(){
-  saveCfg();setCS(null);
-  try{
-    const r=await sql('SELECT NOW() AS t, current_database() AS db');
-    showA('ca','as','✓ Connesso a "'+r.rows[0].db+'" — server: '+new Date(r.rows[0].t).toLocaleString('it-IT'));
-    setCS(true);
-  }catch(e){showA('ca','ae','✗ '+e.message);setCS(false);}
-}
-function setCS(ok){
-  const d=document.getElementById('cd'),t=document.getElementById('ct');
-  if(ok===true){d.className='cd ok';t.textContent='Connesso';t.style.color='var(--green)';}
-  else if(ok===false){d.className='cd er';t.textContent='Errore';t.style.color='var(--red)';}
-  else{d.className='cd';t.textContent='Non collegato';t.style.color='var(--text-dim)';}
-}
-// ─── TABS ─────────────────────────────────────────
-function sw(name,btn){
-  document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('active'));
-  document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));
-  document.getElementById('tab-'+name).classList.add('active');
-  if(btn)btn.classList.add('active');
-  if(name==='list')loadList();
-}
-// ─── ALERTS ───────────────────────────────────────
-function showA(id,cls,msg){
-  const el=document.getElementById(id);
-  el.className='alert '+cls+' show';el.innerHTML=msg;
-  if(cls==='as')setTimeout(()=>el.classList.remove('show'),6000);
-}
-function hideA(id){document.getElementById(id).classList.remove('show');}
-// ─── FORM ─────────────────────────────────────────
-function calcT(){
-  const p=parseFloat(document.getElementById('f-pranzo').value)||0;
-  const c=parseFloat(document.getElementById('f-cena').value)||0;
-  if(p||c)document.getElementById('f-totale').value=(p+c).toFixed(2);
-}
-function resetF(){
-  ['f-pranzo','f-cena','f-totale','f-corrisp','f-pos','f-banca','f-cassa','f-ft','f-cp','f-cs','f-mp','f-ms','f-note']
-    .forEach(id=>document.getElementById(id).value='');
-  document.getElementById('f-data').value=new Date().toISOString().split('T')[0];
-  hideA('ia');
-}
-const fv=id=>{const v=document.getElementById(id).value;return v===''?null:parseFloat(v);};
-const fi=id=>{const v=document.getElementById(id).value;return v===''?null:parseInt(v);};
 
-async function saveRec(){
-  saveCfg();
-  const d=document.getElementById('f-data').value;
-  if(!d){showA('ia','ae','Seleziona una data.');return;}
-  try{
-    await sql(`INSERT INTO incassi_giornalieri
-      (data,pranzo,cena,totale,corrisp,pos,banca,cassa,ft,cp,cs,media_p,media_s,note)
-      VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)
-      ON CONFLICT(data) DO UPDATE SET
-        pranzo=EXCLUDED.pranzo,cena=EXCLUDED.cena,totale=EXCLUDED.totale,
-        corrisp=EXCLUDED.corrisp,pos=EXCLUDED.pos,banca=EXCLUDED.banca,
-        cassa=EXCLUDED.cassa,ft=EXCLUDED.ft,cp=EXCLUDED.cp,cs=EXCLUDED.cs,
-        media_p=EXCLUDED.media_p,media_s=EXCLUDED.media_s,note=EXCLUDED.note`,
-      [d,fv('f-pranzo'),fv('f-cena'),fv('f-totale'),fv('f-corrisp'),
-       fv('f-pos'),fv('f-banca'),fv('f-cassa'),fv('f-ft'),
-       fi('f-cp'),fi('f-cs'),fv('f-mp'),fv('f-ms'),
-       document.getElementById('f-note').value||null]);
-    showA('ia','as','✓ Giornata del '+fmtD(d)+' salvata.');
-  }catch(e){showA('ia','ae','✗ '+e.message);}
+// ─── TABS ─────────────────────────────────────────────────────
+function sw(name, btn) {
+  document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  if (btn) btn.classList.add('active');
+  if (name === 'list') loadList();
 }
-// ─── LIST ─────────────────────────────────────────
-async function loadList(){
-  saveCfg();
-  const anno=document.getElementById('l-anno').value;
-  const mese=document.getElementById('l-mese').value;
-  let wh='WHERE 1=1';const p=[];
-  if(anno){p.push(anno);wh+=` AND EXTRACT(YEAR FROM data)=$${p.length}`;}
-  if(mese){p.push(mese);wh+=` AND EXTRACT(MONTH FROM data)=$${p.length}`;}
-  try{
-    const[rows,years]=await Promise.all([
-      sql(`SELECT id,data,pranzo,cena,totale,cp,cs,pos,cassa,note FROM incassi_giornalieri ${wh} ORDER BY data DESC LIMIT 500`,p),
-      sql('SELECT DISTINCT EXTRACT(YEAR FROM data)::int AS y FROM incassi_giornalieri ORDER BY 1 DESC')
-    ]);
-    const sel=document.getElementById('l-anno');
-    const cur=sel.value;
-    sel.innerHTML='<option value="">Tutti</option>'+years.rows.map(r=>`<option value="${r.y}"${String(r.y)===cur?' selected':''}>${r.y}</option>`).join('');
-    renderList(rows.rows);
-  }catch(e){
-    document.getElementById('lc').innerHTML=`<div class="alert ae show">${e.message}</div>`;
+
+// ─── ALERTS ───────────────────────────────────────────────────
+function showA(id, cls, msg) {
+  const el = document.getElementById(id);
+  el.className = 'alert ' + cls + ' show';
+  el.innerHTML = msg;
+  if (cls === 'as') setTimeout(() => el.classList.remove('show'), 6000);
+}
+function hideA(id) { document.getElementById(id).classList.remove('show'); }
+
+// ─── TEST CONNESSIONE ─────────────────────────────────────────
+async function testConn() {
+  setCS(null);
+  try {
+    const r = await sql('SELECT NOW() AS t, current_database() AS db');
+    showA('ca', 'as', '✓ Connesso a "' + r.rows[0].db + '" — server: ' + new Date(r.rows[0].t).toLocaleString('it-IT'));
+    setCS(true);
+  } catch(e) {
+    showA('ca', 'ae', '✗ ' + e.message);
+    setCS(false);
   }
 }
-function renderList(rows){
-  if(!rows.length){document.getElementById('lc').innerHTML='<div class="es"><div class="ic">📭</div>Nessuna giornata trovata.</div>';return;}
-  const tot=rows.reduce((s,r)=>s+(+(r.totale||0)),0);
-  let h=`<div class="sg">
-    <div class="sc2"><div class="sl">Giornate</div><div class="sv">${rows.length}</div></div>
-    <div class="sc2"><div class="sl">Incasso Totale</div><div class="sv">${fmt(tot)}</div><div class="ss">€</div></div>
-    <div class="sc2"><div class="sl">Media/giorno</div><div class="sv">${fmt(tot/rows.length)}</div><div class="ss">€</div></div>
+function setCS(ok) {
+  const d = document.getElementById('cd'), t = document.getElementById('ct');
+  if (ok === true)  { d.className='cd ok'; t.textContent='Connesso'; t.style.color='var(--green)'; }
+  else if (ok === false) { d.className='cd er'; t.textContent='Errore'; t.style.color='var(--red)'; }
+  else { d.className='cd'; t.textContent='Non testato'; t.style.color='var(--text-dim)'; }
+}
+
+// ─── FORM INSERT ──────────────────────────────────────────────
+function calcT() {
+  const p = parseFloat(document.getElementById('f-pranzo').value) || 0;
+  const c = parseFloat(document.getElementById('f-cena').value) || 0;
+  if (p || c) document.getElementById('f-totale').value = (p + c).toFixed(2);
+}
+function resetF() {
+  ['f-pranzo','f-cena','f-totale','f-corrisp','f-pos','f-banca','f-cassa','f-ft','f-cp','f-cs','f-mp','f-ms','f-note']
+    .forEach(id => document.getElementById(id).value = '');
+  document.getElementById('f-data').value = new Date().toISOString().split('T')[0];
+  hideA('ia');
+}
+const fv = id => { const v = document.getElementById(id).value; return v === '' ? null : parseFloat(v); };
+const fi = id => { const v = document.getElementById(id).value; return v === '' ? null : parseInt(v); };
+
+async function saveRec() {
+  const d = document.getElementById('f-data').value;
+  if (!d) { showA('ia','ae','Seleziona una data.'); return; }
+  try {
+    await sql(`
+      INSERT INTO incassi_giornalieri
+        (data,pranzo,cena,totale,corrisp,pos,banca,cassa,ft,cp,cs,media_p,media_s,note)
+      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)
+      ON CONFLICT(data) DO UPDATE SET
+        pranzo=EXCLUDED.pranzo, cena=EXCLUDED.cena, totale=EXCLUDED.totale,
+        corrisp=EXCLUDED.corrisp, pos=EXCLUDED.pos, banca=EXCLUDED.banca,
+        cassa=EXCLUDED.cassa, ft=EXCLUDED.ft, cp=EXCLUDED.cp, cs=EXCLUDED.cs,
+        media_p=EXCLUDED.media_p, media_s=EXCLUDED.media_s, note=EXCLUDED.note`,
+      [d, fv('f-pranzo'), fv('f-cena'), fv('f-totale'), fv('f-corrisp'),
+       fv('f-pos'), fv('f-banca'), fv('f-cassa'), fv('f-ft'),
+       fi('f-cp'), fi('f-cs'), fv('f-mp'), fv('f-ms'),
+       document.getElementById('f-note').value || null]);
+    showA('ia','as','✓ Giornata del ' + fmtD(d) + ' salvata.');
+  } catch(e) { showA('ia','ae','✗ ' + e.message); }
+}
+
+// ─── LIST ─────────────────────────────────────────────────────
+async function loadList() {
+  const anno = document.getElementById('l-anno').value;
+  const mese = document.getElementById('l-mese').value;
+  let wh = 'WHERE 1=1'; const p = [];
+  if (anno) { p.push(anno); wh += ` AND EXTRACT(YEAR FROM data)=$${p.length}`; }
+  if (mese) { p.push(mese); wh += ` AND EXTRACT(MONTH FROM data)=$${p.length}`; }
+  try {
+    const [rows, years] = await Promise.all([
+      sql(`SELECT id,data,pranzo,cena,totale,cp,cs,pos,cassa,note
+           FROM incassi_giornalieri ${wh} ORDER BY data DESC LIMIT 500`, p),
+      sql('SELECT DISTINCT EXTRACT(YEAR FROM data)::int AS y FROM incassi_giornalieri ORDER BY 1 DESC')
+    ]);
+    const sel = document.getElementById('l-anno');
+    const cur = sel.value;
+    sel.innerHTML = '<option value="">Tutti</option>' +
+      years.rows.map(r => `<option value="${r.y}"${String(r.y)===cur?' selected':''}>${r.y}</option>`).join('');
+    renderList(rows.rows);
+  } catch(e) {
+    document.getElementById('lc').innerHTML = `<div class="alert ae show">${e.message}</div>`;
+  }
+}
+
+function renderList(rows) {
+  if (!rows.length) {
+    document.getElementById('lc').innerHTML = '<div class="es"><div class="ic">📭</div>Nessuna giornata trovata.</div>';
+    return;
+  }
+  const tot = rows.reduce((s,r) => s + (+(r.totale||0)), 0);
+  let h = `<div class="sg">
+    <div class="sc"><div class="sl">Giornate</div><div class="sv">${rows.length}</div></div>
+    <div class="sc"><div class="sl">Incasso Totale</div><div class="sv">${fmt(tot)}</div><div class="ss">€</div></div>
+    <div class="sc"><div class="sl">Media/giorno</div><div class="sv">${fmt(tot/rows.length)}</div><div class="ss">€</div></div>
   </div>
   <div class="tw"><table>
   <thead><tr><th>Data</th><th>Gg</th><th class="r">Pranzo</th><th class="r">Cena</th><th class="r">Totale</th>
   <th class="r">CP</th><th class="r">CS</th><th class="r">POS</th><th class="r">Cassa</th><th>Note</th><th></th></tr></thead><tbody>`;
-  rows.forEach(r=>{
-    const dw=['Dom','Lun','Mar','Mer','Gio','Ven','Sab'][new Date(r.data+'T12:00:00').getDay()];
-    h+=`<tr>
+  rows.forEach(r => {
+    const dw = ['Dom','Lun','Mar','Mer','Gio','Ven','Sab'][new Date(r.data+'T12:00:00').getDay()];
+    h += `<tr>
       <td class="g">${fmtD(r.data)}</td>
       <td>${dw==='Dom'?'<span class="tg ts">Dom</span>':dw}</td>
       <td class="r">${r.pranzo?fmt(r.pranzo):'—'}</td>
@@ -454,99 +477,103 @@ function renderList(rows){
       <td><button class="btn btn-d" style="padding:4px 10px;font-size:10px" onclick="delRec('${r.id}','${r.data}')">✕</button></td>
     </tr>`;
   });
-  h+='</tbody></table></div>';
-  document.getElementById('lc').innerHTML=h;
+  h += '</tbody></table></div>';
+  document.getElementById('lc').innerHTML = h;
 }
-async function delRec(id,data){
-  if(!confirm('Eliminare la giornata del '+fmtD(data)+'?'))return;
-  try{
-    await sql('DELETE FROM incassi_giornalieri WHERE id=$1',[id]);
-    showA('la','as','✓ Eliminato.');loadList();
-  }catch(e){showA('la','ae','✗ '+e.message);}
+
+async function delRec(id, data) {
+  if (!confirm('Eliminare la giornata del ' + fmtD(data) + '?')) return;
+  try {
+    await sql('DELETE FROM incassi_giornalieri WHERE id=$1', [id]);
+    showA('la','as','✓ Eliminato.'); loadList();
+  } catch(e) { showA('la','ae','✗ ' + e.message); }
 }
-// ─── R1: Giorno settimana ──────────────────────────
-async function runR1(){
-  saveCfg();
-  const dow=document.getElementById('r1-g').value;
-  const anniS=document.getElementById('r1-a').value.trim();
-  const campo=document.getElementById('r1-c').value;
-  const NOMI=['Domenica','Lunedì','Martedì','Mercoledì','Giovedì','Venerdì','Sabato'];
-  let yf='';const p=[parseInt(dow)];
-  if(anniS){const anni=anniS.split(',').map(a=>parseInt(a.trim())).filter(Boolean);p.push(anni);yf=`AND EXTRACT(YEAR FROM data)=ANY($2)`;}
-  try{
-    const[bY,det]=await Promise.all([
-      sql(`SELECT EXTRACT(YEAR FROM data)::int AS anno,COUNT(*) AS n,
-        ROUND(SUM(${campo}),2) AS tot,ROUND(AVG(${campo}),2) AS avg,
-        ROUND(MAX(${campo}),2) AS mx,ROUND(MIN(${campo}),2) AS mn,
-        SUM(cp)::int AS cp,SUM(cs)::int AS cs
-        FROM incassi_giornalieri WHERE EXTRACT(DOW FROM data)=$1 ${yf} AND ${campo} IS NOT NULL
-        GROUP BY 1 ORDER BY 1`,p),
+
+// ─── R1: Giorno settimana ─────────────────────────────────────
+async function runR1() {
+  const dow = document.getElementById('r1-g').value;
+  const anniS = document.getElementById('r1-a').value.trim();
+  const campo = document.getElementById('r1-c').value;
+  const NOMI = ['Domenica','Lunedì','Martedì','Mercoledì','Giovedì','Venerdì','Sabato'];
+  let yf = ''; const p = [parseInt(dow)];
+  if (anniS) {
+    const anni = anniS.split(',').map(a => parseInt(a.trim())).filter(Boolean);
+    p.push(anni); yf = `AND EXTRACT(YEAR FROM data)=ANY($2)`;
+  }
+  try {
+    const [bY, det] = await Promise.all([
+      sql(`SELECT EXTRACT(YEAR FROM data)::int AS anno, COUNT(*) AS n,
+        ROUND(SUM(${campo}),2) AS tot, ROUND(AVG(${campo}),2) AS avg,
+        ROUND(MAX(${campo}),2) AS mx, ROUND(MIN(${campo}),2) AS mn,
+        SUM(cp)::int AS cp, SUM(cs)::int AS cs
+        FROM incassi_giornalieri WHERE EXTRACT(DOW FROM data)=$1 ${yf}
+        AND ${campo} IS NOT NULL GROUP BY 1 ORDER BY 1`, p),
       sql(`SELECT data,pranzo,cena,totale,cp,cs FROM incassi_giornalieri
-        WHERE EXTRACT(DOW FROM data)=$1 ${yf} ORDER BY data DESC LIMIT 300`,p)
+        WHERE EXTRACT(DOW FROM data)=$1 ${yf} ORDER BY data DESC LIMIT 300`, p)
     ]);
-    if(!bY.rows.length){document.getElementById('r1r').innerHTML='<div class="es">Nessun dato.</div>';return;}
-    const totAll=bY.rows.reduce((s,r)=>s+(+(r.tot||0)),0);
-    const nAll=bY.rows.reduce((s,r)=>s+parseInt(r.n),0);
-    let h=`<div class="orn">· · ·</div>
+    if (!bY.rows.length) { document.getElementById('r1r').innerHTML='<div class="es">Nessun dato.</div>'; return; }
+    const totAll = bY.rows.reduce((s,r) => s+(+(r.tot||0)), 0);
+    const nAll   = bY.rows.reduce((s,r) => s+parseInt(r.n), 0);
+    let h = `<div class="orn">· · ·</div>
     <h3 style="margin-bottom:12px">Tutti i ${NOMI[dow]} — ${campo}</h3>
     <div class="sg">
-      <div class="sc2"><div class="sl">Giornate</div><div class="sv">${nAll}</div></div>
-      <div class="sc2"><div class="sl">Totale</div><div class="sv">${fmt(totAll)}</div><div class="ss">€</div></div>
-      <div class="sc2"><div class="sl">Media/giorno</div><div class="sv">${fmt(totAll/nAll)}</div><div class="ss">€</div></div>
+      <div class="sc"><div class="sl">Giornate</div><div class="sv">${nAll}</div></div>
+      <div class="sc"><div class="sl">Totale</div><div class="sv">${fmt(totAll)}</div><div class="ss">€</div></div>
+      <div class="sc"><div class="sl">Media/giorno</div><div class="sv">${fmt(totAll/nAll)}</div><div class="ss">€</div></div>
     </div>
     <h3 style="margin:20px 0 12px">Per anno</h3>
     <div class="tw"><table><thead><tr><th>Anno</th><th class="r">N.</th><th class="r">Totale</th><th class="r">Media</th>
     <th class="r" style="color:var(--green)">Max</th><th class="r" style="color:var(--red)">Min</th>
     <th class="r">Cop.P</th><th class="r">Cop.S</th></tr></thead><tbody>`;
-    bY.rows.forEach(r=>{
-      h+=`<tr><td class="g"><span class="yb">${r.anno}</span></td>
+    bY.rows.forEach(r => {
+      h += `<tr><td class="g"><span class="yb">${r.anno}</span></td>
         <td class="r">${r.n}</td><td class="r">${fmt(r.tot)}</td><td class="r">${fmt(r.avg)}</td>
         <td class="r" style="color:var(--green)">${fmt(r.mx)}</td>
         <td class="r" style="color:var(--red)">${fmt(r.mn)}</td>
         <td class="r d">${r.cp||'—'}</td><td class="r d">${r.cs||'—'}</td></tr>`;
     });
-    h+=`</tbody></table></div>
+    h += `</tbody></table></div>
     <h3 style="margin:20px 0 12px">Dettaglio (ultime 300)</h3>
     <div class="tw"><table><thead><tr><th>Data</th><th class="r">${campo}</th>
     <th class="r">Pranzo</th><th class="r">Cena</th><th class="r">CP</th><th class="r">CS</th>
     </tr></thead><tbody>`;
-    det.rows.forEach(r=>{
-      h+=`<tr><td class="g">${fmtD(r.data)} <span class="tg ts">${NOMI[dow].slice(0,3)}</span></td>
+    det.rows.forEach(r => {
+      h += `<tr><td class="g">${fmtD(r.data)} <span class="tg ts">${NOMI[dow].slice(0,3)}</span></td>
         <td class="r">${fmt(r[campo])}</td>
         <td class="r d">${r.pranzo?fmt(r.pranzo):'—'}</td>
         <td class="r d">${r.cena?fmt(r.cena):'—'}</td>
         <td class="r d">${r.cp??'—'}</td><td class="r d">${r.cs??'—'}</td></tr>`;
     });
-    h+='</tbody></table></div>';
-    document.getElementById('r1r').innerHTML=h;
-  }catch(e){document.getElementById('r1r').innerHTML=`<div class="alert ae show">${e.message}</div>`;}
+    h += '</tbody></table></div>';
+    document.getElementById('r1r').innerHTML = h;
+  } catch(e) { document.getElementById('r1r').innerHTML=`<div class="alert ae show">${e.message}</div>`; }
 }
-// ─── R2: Mensile ──────────────────────────────────
-async function runR2(){
-  saveCfg();
-  const anniS=document.getElementById('r2-a').value.trim();
-  const mese=parseInt(document.getElementById('r2-m').value);
-  const MN=['','Gen','Feb','Mar','Apr','Mag','Giu','Lug','Ago','Set','Ott','Nov','Dic'];
-  let yf='',mf='';const p=[];
-  if(anniS){const a=anniS.split(',').map(x=>parseInt(x.trim())).filter(Boolean);p.push(a);yf=`AND EXTRACT(YEAR FROM data)=ANY($${p.length})`;}
-  if(mese){p.push(mese);mf=`AND EXTRACT(MONTH FROM data)=$${p.length}`;}
-  try{
-    const r=await sql(`SELECT EXTRACT(YEAR FROM data)::int AS anno,EXTRACT(MONTH FROM data)::int AS mese,
-      COUNT(*) AS giorni,ROUND(SUM(totale),2) AS tot,ROUND(AVG(totale),2) AS avg,
-      ROUND(SUM(pranzo),2) AS tp,ROUND(SUM(cena),2) AS tc,
-      SUM(cp)::int AS tcp,SUM(cs)::int AS tcs
+
+// ─── R2: Mensile ──────────────────────────────────────────────
+async function runR2() {
+  const anniS = document.getElementById('r2-a').value.trim();
+  const mese  = parseInt(document.getElementById('r2-m').value);
+  const MN = ['','Gen','Feb','Mar','Apr','Mag','Giu','Lug','Ago','Set','Ott','Nov','Dic'];
+  let yf = '', mf = ''; const p = [];
+  if (anniS) { const a=anniS.split(',').map(x=>parseInt(x.trim())).filter(Boolean); p.push(a); yf=`AND EXTRACT(YEAR FROM data)=ANY($${p.length})`; }
+  if (mese)  { p.push(mese); mf=`AND EXTRACT(MONTH FROM data)=$${p.length}`; }
+  try {
+    const r = await sql(`SELECT EXTRACT(YEAR FROM data)::int AS anno, EXTRACT(MONTH FROM data)::int AS mese,
+      COUNT(*) AS giorni, ROUND(SUM(totale),2) AS tot, ROUND(AVG(totale),2) AS avg,
+      ROUND(SUM(pranzo),2) AS tp, ROUND(SUM(cena),2) AS tc,
+      SUM(cp)::int AS tcp, SUM(cs)::int AS tcs
       FROM incassi_giornalieri WHERE 1=1 ${yf} ${mf}
-      GROUP BY 1,2 ORDER BY 1,2`,p);
-    if(!r.rows.length){document.getElementById('r2r').innerHTML='<div class="es">Nessun dato.</div>';return;}
-    let h=`<div class="orn">· · ·</div><div class="tw"><table>
+      GROUP BY 1,2 ORDER BY 1,2`, p);
+    if (!r.rows.length) { document.getElementById('r2r').innerHTML='<div class="es">Nessun dato.</div>'; return; }
+    let h = `<div class="orn">· · ·</div><div class="tw"><table>
     <thead><tr><th>Anno</th><th>Mese</th><th class="r">Giorni</th>
     <th class="r">Totale €</th><th class="r">Media/g</th>
     <th class="r">Pranzo</th><th class="r">Cena</th>
     <th class="r">Cop.P</th><th class="r">Cop.S</th></tr></thead><tbody>`;
-    let py='',gt=0;
-    r.rows.forEach(row=>{
-      if(row.anno!==py&&py)h+='<tr><td colspan="9" style="padding:2px;border:none;background:var(--bg)"></td></tr>';
-      py=row.anno;gt+=+(row.tot||0);
+    let py='', gt=0;
+    r.rows.forEach(row => {
+      if (row.anno!==py&&py) h+='<tr><td colspan="9" style="padding:2px;border:none;background:var(--bg)"></td></tr>';
+      py=row.anno; gt+=+(row.tot||0);
       h+=`<tr><td class="g"><span class="yb">${row.anno}</span></td>
         <td>${MN[row.mese]}</td><td class="r d">${row.giorni}</td>
         <td class="r" style="color:var(--gold)">${fmt(row.tot)}</td>
@@ -556,27 +583,26 @@ async function runR2(){
     });
     h+=`<tr class="tot"><td colspan="3">TOTALE</td><td class="r">${fmt(gt)}</td><td colspan="5"></td></tr>`;
     h+='</tbody></table></div>';
-    document.getElementById('r2r').innerHTML=h;
-  }catch(e){document.getElementById('r2r').innerHTML=`<div class="alert ae show">${e.message}</div>`;}
+    document.getElementById('r2r').innerHTML = h;
+  } catch(e) { document.getElementById('r2r').innerHTML=`<div class="alert ae show">${e.message}</div>`; }
 }
-// ─── R3: Top days ──────────────────────────────────
-async function runR3(){
-  saveCfg();
-  const from=document.getElementById('r3-f').value;
-  const to=document.getElementById('r3-t').value;
+
+// ─── R3: Top days ─────────────────────────────────────────────
+async function runR3() {
+  const from=document.getElementById('r3-f').value, to=document.getElementById('r3-t').value;
   const n=parseInt(document.getElementById('r3-n').value)||20;
   const ord=document.getElementById('r3-o').value;
   const DN=['Dom','Lun','Mar','Mer','Gio','Ven','Sab'];
-  let wh='WHERE totale IS NOT NULL';const p=[];
+  let wh='WHERE totale IS NOT NULL'; const p=[];
   if(from){p.push(from);wh+=` AND data>=$${p.length}`;}
   if(to){p.push(to);wh+=` AND data<=$${p.length}`;}
   p.push(n);
-  try{
-    const r=await sql(`SELECT data,totale,pranzo,cena,cp,cs,note,
+  try {
+    const r = await sql(`SELECT data,totale,pranzo,cena,cp,cs,note,
       EXTRACT(DOW FROM data)::int AS dow
       FROM incassi_giornalieri ${wh}
-      ORDER BY totale ${ord} NULLS LAST LIMIT $${p.length}`,p);
-    if(!r.rows.length){document.getElementById('r3r').innerHTML='<div class="es">Nessun dato.</div>';return;}
+      ORDER BY totale ${ord} NULLS LAST LIMIT $${p.length}`, p);
+    if (!r.rows.length) { document.getElementById('r3r').innerHTML='<div class="es">Nessun dato.</div>'; return; }
     let h=`<div class="orn">· · ·</div><div class="tw"><table>
     <thead><tr><th>#</th><th>Data</th><th>Gg</th>
     <th class="r">Totale</th><th class="r">Pranzo</th><th class="r">Cena</th>
@@ -595,37 +621,36 @@ async function runR3(){
     });
     h+='</tbody></table></div>';
     document.getElementById('r3r').innerHTML=h;
-  }catch(e){document.getElementById('r3r').innerHTML=`<div class="alert ae show">${e.message}</div>`;}
+  } catch(e) { document.getElementById('r3r').innerHTML=`<div class="alert ae show">${e.message}</div>`; }
 }
-// ─── R4: Annuale ────────────────────────────────────
-async function runR4(){
-  saveCfg();
+
+// ─── R4: Annuale ─────────────────────────────────────────────
+async function runR4() {
   const anno=document.getElementById('r4-a').value.trim();
-  const p=[];let wh='WHERE 1=1';
-  if(anno){p.push(parseInt(anno));wh+=` AND EXTRACT(YEAR FROM data)=$1`;}
-  try{
-    const r=await sql(`SELECT EXTRACT(YEAR FROM data)::int AS anno,
-      COUNT(*) AS giorni,
-      ROUND(SUM(totale),2) AS tot,ROUND(AVG(totale),2) AS avg,
-      ROUND(MAX(totale),2) AS mx,ROUND(MIN(totale),2) AS mn,
-      ROUND(SUM(pranzo),2) AS tp,ROUND(SUM(cena),2) AS tc,
-      ROUND(SUM(pos),2) AS tpos,ROUND(SUM(cassa),2) AS tcassa,ROUND(SUM(banca),2) AS tbanca,
-      SUM(cp)::int AS tcp,SUM(cs)::int AS tcs,
-      ROUND(AVG(media_p),2) AS avmp,ROUND(AVG(media_s),2) AS avms
-      FROM incassi_giornalieri ${wh} GROUP BY 1 ORDER BY 1`,p);
+  const p=[]; let wh='WHERE 1=1';
+  if(anno){p.push(parseInt(anno)); wh+=` AND EXTRACT(YEAR FROM data)=$1`;}
+  try {
+    const r = await sql(`SELECT EXTRACT(YEAR FROM data)::int AS anno,
+      COUNT(*) AS giorni, ROUND(SUM(totale),2) AS tot, ROUND(AVG(totale),2) AS avg,
+      ROUND(MAX(totale),2) AS mx, ROUND(MIN(totale),2) AS mn,
+      ROUND(SUM(pranzo),2) AS tp, ROUND(SUM(cena),2) AS tc,
+      ROUND(SUM(pos),2) AS tpos, ROUND(SUM(cassa),2) AS tcassa, ROUND(SUM(banca),2) AS tbanca,
+      SUM(cp)::int AS tcp, SUM(cs)::int AS tcs,
+      ROUND(AVG(media_p),2) AS avmp, ROUND(AVG(media_s),2) AS avms
+      FROM incassi_giornalieri ${wh} GROUP BY 1 ORDER BY 1`, p);
     if(!r.rows.length){document.getElementById('r4r').innerHTML='<div class="es">Nessun dato.</div>';return;}
     let h='<div class="orn">· · ·</div>';
     r.rows.forEach(row=>{
       h+=`<div style="margin-bottom:32px">
         <h3><span class="yb">${row.anno}</span></h3>
         <div class="sg" style="margin-top:16px">
-          <div class="sc2"><div class="sl">Giorni apertura</div><div class="sv">${row.giorni}</div></div>
-          <div class="sc2"><div class="sl">Totale anno</div><div class="sv" style="font-size:18px">${fmt(row.tot)}</div><div class="ss">€</div></div>
-          <div class="sc2"><div class="sl">Media/giorno</div><div class="sv">${fmt(row.avg)}</div><div class="ss">€</div></div>
-          <div class="sc2"><div class="sl">Miglior giorno</div><div class="sv" style="color:var(--green);font-size:18px">${fmt(row.mx)}</div></div>
-          <div class="sc2"><div class="sl">Peggior giorno</div><div class="sv" style="color:var(--red);font-size:18px">${fmt(row.mn)}</div></div>
-          <div class="sc2"><div class="sl">Scontr. medio P</div><div class="sv">${fmt(row.avmp)}</div><div class="ss">€/cop.</div></div>
-          <div class="sc2"><div class="sl">Scontr. medio S</div><div class="sv">${fmt(row.avms)}</div><div class="ss">€/cop.</div></div>
+          <div class="sc"><div class="sl">Giorni apertura</div><div class="sv">${row.giorni}</div></div>
+          <div class="sc"><div class="sl">Totale anno</div><div class="sv" style="font-size:18px">${fmt(row.tot)}</div><div class="ss">€</div></div>
+          <div class="sc"><div class="sl">Media/giorno</div><div class="sv">${fmt(row.avg)}</div><div class="ss">€</div></div>
+          <div class="sc"><div class="sl">Miglior giorno</div><div class="sv" style="color:var(--green);font-size:18px">${fmt(row.mx)}</div></div>
+          <div class="sc"><div class="sl">Peggior giorno</div><div class="sv" style="color:var(--red);font-size:18px">${fmt(row.mn)}</div></div>
+          <div class="sc"><div class="sl">Scontr. medio P</div><div class="sv">${fmt(row.avmp)}</div><div class="ss">€/cop.</div></div>
+          <div class="sc"><div class="sl">Scontr. medio S</div><div class="sv">${fmt(row.avms)}</div><div class="ss">€/cop.</div></div>
         </div>
         <div class="tw"><table>
           <thead><tr><th>Pranzo tot</th><th>Cena tot</th><th>POS tot</th><th>Cassa tot</th><th>Banca tot</th><th>Cop.P tot</th><th>Cop.S tot</th></tr></thead>
@@ -638,45 +663,47 @@ async function runR4(){
       </div>`;
     });
     document.getElementById('r4r').innerHTML=h;
-  }catch(e){document.getElementById('r4r').innerHTML=`<div class="alert ae show">${e.message}</div>`;}
+  } catch(e) { document.getElementById('r4r').innerHTML=`<div class="alert ae show">${e.message}</div>`; }
 }
-// ─── R5: Custom SQL ─────────────────────────────────
-async function runR5(){
-  saveCfg();
-  const q=document.getElementById('r5-q').value.trim();
-  if(!q)return;
-  try{
-    const r=await sql(q);
-    if(!r.rows?.length){document.getElementById('r5r').innerHTML='<div class="es" style="padding:20px">Nessun risultato.</div>';return;}
-    const fields=r.fields.map(f=>f.name);
+
+// ─── R5: Custom SQL ───────────────────────────────────────────
+async function runR5() {
+  const q = document.getElementById('r5-q').value.trim();
+  if (!q) return;
+  try {
+    const r = await sql(q);
+    if (!r.rows?.length) { document.getElementById('r5r').innerHTML='<div class="es" style="padding:20px">Nessun risultato.</div>'; return; }
+    const fields = r.fields.map(f => f.name);
     let h=`<div class="tw" style="margin-top:16px"><table>
     <thead><tr>${fields.map(f=>'<th>'+f+'</th>').join('')}</tr></thead><tbody>`;
-    r.rows.forEach(row=>{h+='<tr>'+fields.map(f=>`<td class="r">${row[f]??'—'}</td>`).join('')+'</tr>';});
+    r.rows.forEach(row=>{ h+='<tr>'+fields.map(f=>`<td class="r">${row[f]??'—'}</td>`).join('')+'</tr>'; });
     h+=`</tbody></table><div class="d" style="padding:8px 12px">${r.rowCount} righe</div></div>`;
     document.getElementById('r5r').innerHTML=h;
-  }catch(e){document.getElementById('r5r').innerHTML=`<div class="alert ae show" style="margin-top:12px">${e.message}</div>`;}
+  } catch(e) { document.getElementById('r5r').innerHTML=`<div class="alert ae show" style="margin-top:12px">${e.message}</div>`; }
 }
-// ─── UTILS ─────────────────────────────────────────
-function fmt(n){
-  if(n==null||n===''||isNaN(n))return'—';
+
+// ─── UTILS ────────────────────────────────────────────────────
+function fmt(n) {
+  if (n==null||n===''||isNaN(n)) return '—';
   return new Intl.NumberFormat('it-IT',{minimumFractionDigits:2,maximumFractionDigits:2}).format(n);
 }
-function fmtD(iso){
-  if(!iso)return'';const d=iso.split('T')[0];const[y,m,g]=d.split('-');return`${g}/${m}/${y}`;
+function fmtD(iso) {
+  if (!iso) return '';
+  const d = iso.split('T')[0], [y,m,g] = d.split('-');
+  return `${g}/${m}/${y}`;
 }
-function copySQL(){
+function copySQL() {
   navigator.clipboard.writeText(document.getElementById('sql-schema').innerText)
-    .then(()=>showA('ca','as','SQL copiato negli appunti!'));
+    .then(() => showA('ca','as','SQL copiato negli appunti!'));
 }
-// ─── INIT ──────────────────────────────────────────
-window.addEventListener('DOMContentLoaded',()=>{
-  loadCfg();
-  document.getElementById('f-data').value=new Date().toISOString().split('T')[0];
-  const y=new Date().getFullYear();
-  document.getElementById('r3-f').value=`${y-1}-01-01`;
-  document.getElementById('r3-t').value=new Date().toISOString().split('T')[0];
-  document.getElementById('r2-a').value=`${y-1},${y}`;
-  if(C.host)setCS(null);
+
+// ─── INIT ─────────────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('f-data').value = new Date().toISOString().split('T')[0];
+  const y = new Date().getFullYear();
+  document.getElementById('r3-f').value = `${y-1}-01-01`;
+  document.getElementById('r3-t').value = new Date().toISOString().split('T')[0];
+  document.getElementById('r2-a').value = `${y-1},${y}`;
 });
 </script>
 </body>
