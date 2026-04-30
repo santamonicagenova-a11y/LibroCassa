@@ -1,18 +1,19 @@
-// api/sql.js — Vercel Serverless Function
-// Fa da proxy tra il browser e Neon Postgres.
-// Le credenziali sono variabili d'ambiente di Vercel (non nel browser).
+// api/sql.js — Vercel Serverless Function (CommonJS)
+// Proxy tra il browser e Neon Postgres.
+// Le credenziali Neon vengono lette dalle variabili d'ambiente di Vercel,
+// non sono mai esposte al browser.
 
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
 
   // Solo POST
   if (req.method !== 'POST') {
     return res.status(405).json({ message: 'Method not allowed' });
   }
 
-  const { query, params = [] } = req.body;
+  const { query, params = [] } = req.body || {};
 
   if (!query) {
-    return res.status(400).json({ message: 'Campo "query" mancante' });
+    return res.status(400).json({ message: 'Campo "query" mancante nel body' });
   }
 
   // Credenziali dalle variabili d'ambiente di Vercel
@@ -23,16 +24,20 @@ export default async function handler(req, res) {
 
   if (!host || !user || !pass) {
     return res.status(500).json({
-      message: 'Variabili ambiente Neon non configurate. ' +
-               'Vai su Vercel → Settings → Environment Variables e aggiungi NEON_HOST, NEON_USER, NEON_PASS, NEON_DB.'
+      message:
+        'Variabili ambiente mancanti. ' +
+        'Vai su Vercel → Settings → Environment Variables e aggiungi ' +
+        'NEON_HOST, NEON_USER, NEON_PASS, NEON_DB, poi fai Redeploy.'
     });
   }
 
-  const auth    = Buffer.from(`${user}:${pass}`).toString('base64');
-  const connStr = `postgresql://${user}:${pass}@${host}/${db}?sslmode=require`;
+  // Usa l'endpoint diretto (senza -pooler) per l'API HTTP
+  const directHost = host.replace('-pooler', '');
+  const auth       = Buffer.from(`${user}:${pass}`).toString('base64');
+  const connStr    = `postgresql://${user}:${pass}@${directHost}/${db}?sslmode=require`;
 
   try {
-    const neonRes = await fetch(`https://${host}/sql`, {
+    const neonRes = await fetch(`https://${directHost}/sql`, {
       method: 'POST',
       headers: {
         'Content-Type':           'application/json',
@@ -48,4 +53,4 @@ export default async function handler(req, res) {
   } catch (e) {
     return res.status(502).json({ message: 'Errore connessione Neon: ' + e.message });
   }
-}
+};
