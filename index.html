@@ -107,6 +107,7 @@
   .dow-link{background:none;border:none;color:var(--text-dim);font-size:10px;cursor:pointer;padding:3px 8px;letter-spacing:.08em;text-transform:uppercase;font-family:'DM Mono',monospace;transition:color .15s;border:1px solid var(--border);border-radius:var(--radius)}
   .dow-link:hover{color:var(--gold);border-color:var(--gold-dim)}
   /* ── Chart Type Selector ── */
+  .r-status{min-height:22px;font-size:11px;margin:10px 0 4px;letter-spacing:.04em}
   .chart-bar{display:none;margin-top:14px;padding-top:14px;border-top:1px solid var(--border)}
   .chart-bar.show{display:flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:space-between}
   .ct-opts{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
@@ -285,7 +286,7 @@
     <button class="btn btn-s" onclick="resetF()">↺ Azzera</button>
   </div>
   <div style="margin-top:32px;padding-top:16px;border-top:1px solid var(--border);text-align:right;font-size:10px;color:var(--text-dim);letter-spacing:.08em">
-    Libro Cassa &middot; v 2026.05.01.06
+    Libro Cassa &middot; v 2026.05.01.07
   </div>
 </div>
 
@@ -404,6 +405,9 @@
 </main>
 
 <script>
+// ─── CHART DATA STORE ────────────────────────────────────────
+window._CD = {};
+
 // ─── SQL via Vercel Function ───────────────────────────────────
 // Il browser chiama /api/sql — nessuna credenziale nel browser.
 // Le credenziali Neon sono nelle variabili d'ambiente di Vercel.
@@ -599,7 +603,7 @@ async function runR1() {
     const meseLabel = mese ? MN[mese] : '';
     const titleParts = ['Gg: ' + dows.map(d => NOMI[d]).join('+'), rangeLabel, meseLabel].filter(Boolean);
 
-    window._CD[1] = {
+    (window._CD=window._CD||{},window._CD[1]) = {
       title: titleParts.join(' \u00B7 ') + ' \u2014 ' + campo,
       labels: anni.map(String),
       datasets: dows.map(dow => ({
