@@ -286,7 +286,7 @@
     <button class="btn btn-s" onclick="resetF()">↺ Azzera</button>
   </div>
   <div style="margin-top:32px;padding-top:16px;border-top:1px solid var(--border);text-align:right;font-size:10px;color:var(--text-dim);letter-spacing:.08em">
-    Libro Cassa &middot; v 2026.05.01.09
+    Libro Cassa &middot; v 2026.05.01.11
   </div>
 </div>
 
@@ -365,7 +365,11 @@
       </select></div>
       <div><label>&nbsp;</label><button class="btn btn-p" onclick="runR2()">▶ Genera</button></div>
     </div>
-    <div id="r2r"></div>
+    <div id="r2-st" class="r-status"></div>
+    <div id="r2pb" class="chart-bar">
+      <div class="ct-opts"><span class="ct-label">Grafico</span><label class="ct-opt"><input type="radio" name="ct2" value="bar"  checked>Barre</label><label class="ct-opt"><input type="radio" name="ct2" value="line">Linee</label><label class="ct-opt"><input type="radio" name="ct2" value="pie">Torta</label><label class="ct-opt"><input type="radio" name="ct2" value="scatter">Dispersione</label><label class="ct-opt"><input type="radio" name="ct2" value="histogram">Istogramma</label></div>
+      <button class="btn-print" onclick="printChart(2,'')">🖨 Stampa</button>
+    </div>
   </div>
 
   <div class="card">
@@ -378,7 +382,11 @@
       <div class="f"><label>Ordine</label><select id="r3-o"><option value="DESC">Migliori ↓</option><option value="ASC">Peggiori ↑</option></select></div>
       <div><label>&nbsp;</label><button class="btn btn-p" onclick="runR3()">▶ Genera</button></div>
     </div>
-    <div id="r3r"></div>
+    <div id="r3-st" class="r-status"></div>
+    <div id="r3pb" class="chart-bar">
+      <div class="ct-opts"><span class="ct-label">Grafico</span><label class="ct-opt"><input type="radio" name="ct3" value="bar"  checked>Barre</label><label class="ct-opt"><input type="radio" name="ct3" value="line">Linee</label><label class="ct-opt"><input type="radio" name="ct3" value="pie">Torta</label><label class="ct-opt"><input type="radio" name="ct3" value="scatter">Dispersione</label><label class="ct-opt"><input type="radio" name="ct3" value="histogram">Istogramma</label></div>
+      <button class="btn-print" onclick="printChart(3,'')">🖨 Stampa</button>
+    </div>
   </div>
 
   <div class="card">
@@ -388,7 +396,11 @@
       <div class="f"><label>Anno (vuoto=tutti)</label><input type="text" id="r4-a" placeholder="es. 2023"></div>
       <div><label>&nbsp;</label><button class="btn btn-p" onclick="runR4()">▶ Genera</button></div>
     </div>
-    <div id="r4r"></div>
+    <div id="r4-st" class="r-status"></div>
+    <div id="r4pb" class="chart-bar">
+      <div class="ct-opts"><span class="ct-label">Grafico</span><label class="ct-opt"><input type="radio" name="ct4" value="bar"  checked>Barre</label><label class="ct-opt"><input type="radio" name="ct4" value="line">Linee</label><label class="ct-opt"><input type="radio" name="ct4" value="pie">Torta</label><label class="ct-opt"><input type="radio" name="ct4" value="scatter">Dispersione</label><label class="ct-opt"><input type="radio" name="ct4" value="histogram">Istogramma</label></div>
+      <button class="btn-print" onclick="printChart(4,'')">🖨 Stampa</button>
+    </div>
   </div>
 
   <div class="card">
@@ -399,7 +411,11 @@
       placeholder="SELECT EXTRACT(DOW FROM data) AS dow, ROUND(AVG(totale),2) AS media&#10;FROM incassi&#10;WHERE EXTRACT(YEAR FROM data) = 2022&#10;GROUP BY 1 ORDER BY 1"></textarea>
     <br><br>
     <button class="btn btn-p" onclick="runR5()">▶ Esegui</button>
-    <div id="r5r"></div>
+    <div id="r5-st" class="r-status"></div>
+    <div id="r5pb" class="chart-bar">
+      <div class="ct-opts"><span class="ct-label">Grafico</span><label class="ct-opt"><input type="radio" name="ct5" value="bar"  checked>Barre</label><label class="ct-opt"><input type="radio" name="ct5" value="line">Linee</label><label class="ct-opt"><input type="radio" name="ct5" value="pie">Torta</label><label class="ct-opt"><input type="radio" name="ct5" value="scatter">Dispersione</label><label class="ct-opt"><input type="radio" name="ct5" value="histogram">Istogramma</label></div>
+      <button class="btn-print" onclick="printChart(5,'')">🖨 Stampa</button>
+    </div>
   </div>
 </div>
 </main>
@@ -677,7 +693,7 @@ async function runR2() {
   let yf = '', mf = ''; const p = [];
   if (anniS) { const a = anniS.split(',').map(x => parseInt(x.trim())).filter(Boolean); p.push(a); yf = 'AND EXTRACT(YEAR FROM data)=ANY($' + p.length + ')'; }
   if (mese)  { p.push(mese); mf = 'AND EXTRACT(MONTH FROM data)=$' + p.length; }
-  const st = document.getElementById('r2-st');
+  const st = document.getElementById('r2-st') || document.createElement('div');
   st.innerHTML = '<span style="color:var(--text-dim)">\u23f3 Caricamento...</span>';
   try {
     const r = await sql('SELECT EXTRACT(YEAR FROM data)::int AS anno, EXTRACT(MONTH FROM data)::int AS mese, ROUND(SUM(totale),2) AS tot FROM incassi WHERE 1=1 ' + yf + ' ' + mf + ' AND totale IS NOT NULL GROUP BY 1,2 ORDER BY 1,2', p);
@@ -692,7 +708,7 @@ async function runR2() {
       scatterData: r.rows.map((row, i) => ({ x: i, y: parseFloat(row.tot) || 0 }))
     };
     st.innerHTML = '<span style="color:var(--green)">\u2713 ' + r.rows.length + ' mesi pronti</span>';
-    document.getElementById('r2pb').classList.add('show');
+    (document.getElementById('r2pb')||{classList:{add:()=>{}}}).classList.add('show');
   } catch(e) { st.innerHTML = '<span style="color:var(--red)">\u2717 ' + e.message + '</span>'; }
 }
 
@@ -705,7 +721,7 @@ async function runR3() {
   if (from) { p.push(from); wh += ' AND data>=$' + p.length; }
   if (to)   { p.push(to);   wh += ' AND data<=$' + p.length; }
   p.push(n);
-  const st = document.getElementById('r3-st');
+  const st = document.getElementById('r3-st') || document.createElement('div');
   st.innerHTML = '<span style="color:var(--text-dim)">\u23f3 Caricamento...</span>';
   try {
     const r = await sql('SELECT data, totale FROM incassi ' + wh + ' ORDER BY totale ' + ord + ' NULLS LAST LIMIT $' + p.length, p);
@@ -717,7 +733,7 @@ async function runR3() {
       scatterData: r.rows.map((row, i) => ({ x: i + 1, y: parseFloat(row.totale) || 0 }))
     };
     st.innerHTML = '<span style="color:var(--green)">\u2713 ' + r.rows.length + ' giornate pronte</span>';
-    document.getElementById('r3pb').classList.add('show');
+    (document.getElementById('r3pb')||{classList:{add:()=>{}}}).classList.add('show');
   } catch(e) { st.innerHTML = '<span style="color:var(--red)">\u2717 ' + e.message + '</span>'; }
 }
 
@@ -726,7 +742,7 @@ async function runR4() {
   const anno = document.getElementById('r4-a').value.trim();
   const p = []; let wh = 'WHERE totale IS NOT NULL';
   if (anno) { p.push(parseInt(anno)); wh += ' AND EXTRACT(YEAR FROM data)=$1'; }
-  const st = document.getElementById('r4-st');
+  const st = document.getElementById('r4-st') || document.createElement('div');
   st.innerHTML = '<span style="color:var(--text-dim)">\u23f3 Caricamento...</span>';
   try {
     const r = await sql('SELECT EXTRACT(YEAR FROM data)::int AS anno, ROUND(SUM(totale),2) AS tot, ROUND(AVG(totale),2) AS avg, ROUND(SUM(pranzo),2) AS tp, ROUND(SUM(cena),2) AS tc FROM incassi ' + wh + ' GROUP BY 1 ORDER BY 1', p);
@@ -743,7 +759,7 @@ async function runR4() {
       scatterData: r.rows.map(r => ({ x: String(r.anno), y: parseFloat(r.tot) || 0 }))
     };
     st.innerHTML = '<span style="color:var(--green)">\u2713 ' + r.rows.length + ' anni pronti</span>';
-    document.getElementById('r4pb').classList.add('show');
+    (document.getElementById('r4pb')||{classList:{add:()=>{}}}).classList.add('show');
   } catch(e) { st.innerHTML = '<span style="color:var(--red)">\u2717 ' + e.message + '</span>'; }
 }
 
@@ -751,7 +767,7 @@ async function runR4() {
 async function runR5() {
   const q = document.getElementById('r5-q').value.trim();
   if (!q) return;
-  const st = document.getElementById('r5-st');
+  const st = document.getElementById('r5-st') || document.createElement('div');
   st.innerHTML = '<span style="color:var(--text-dim)">\u23f3 Caricamento...</span>';
   try {
     const r = await sql(q);
@@ -767,7 +783,7 @@ async function runR5() {
       scatterData: r.rows.map((row, i) => ({ x: i, y: parseFloat(row[valF[0]]) || 0 }))
     };
     st.innerHTML = '<span style="color:var(--green)">\u2713 ' + r.rowCount + ' righe \u2014 ' + lblF + ' vs ' + valF.join(', ') + '</span>';
-    document.getElementById('r5pb').classList.add('show');
+    (document.getElementById('r5pb')||{classList:{add:()=>{}}}).classList.add('show');
   } catch(e) { st.innerHTML = '<span style="color:var(--red)">\u2717 ' + e.message + '</span>'; }
 }
 
