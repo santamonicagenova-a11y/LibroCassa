@@ -1,4 +1,4 @@
-// api/sql.js — Vercel Serverless Function (CommonJS) — VERSIONE DEBUG
+// api/sql.js — Vercel Serverless Function (CommonJS)
 module.exports.config = {
   api: { bodyParser: true },
 };
@@ -10,23 +10,27 @@ module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   if (req.method === 'OPTIONS') return res.status(200).end();
  
-  // ── Leggi variabili d'ambiente ────────────────────────
+  if (req.method !== 'POST') {
+    return res.status(405).json({ message: 'Method not allowed' });
+  }
+ 
+  // ── Body parsing ──────────────────────────────────────
+  let body = req.body;
+  if (typeof body === 'string') { try { body = JSON.parse(body); } catch (_) { body = {}; } }
+  if (!body || typeof body !== 'object') body = {};
+ 
+  // ── Debug mode ────────────────────────────────────────
   const host = process.env.NEON_HOST;
   const user = process.env.NEON_USER;
   const pass = process.env.NEON_PASS;
   const db   = process.env.NEON_DB || 'neondb';
  
-  // ── Se la query è "debug", restituisce lo stato delle env var ──
-  let body = req.body;
-  if (typeof body === 'string') { try { body = JSON.parse(body); } catch (_) { body = {}; } }
-  if (!body || typeof body !== 'object') body = {};
- 
   if (body.query === 'debug') {
     return res.status(200).json({
-      NEON_HOST:  host  ? `✓ presente (${host.slice(0,20)}...)` : '✗ MANCANTE',
-      NEON_USER:  user  ? `✓ presente (${user})` : '✗ MANCANTE',
-      NEON_PASS:  pass  ? `✓ presente (${pass.length} caratteri)` : '✗ MANCANTE',
-      NEON_DB:    db    ? `✓ presente (${db})` : '✗ MANCANTE',
+      NEON_HOST: host ? `✓ presente (${host.slice(0,20)}...)` : '✗ MANCANTE',
+      NEON_USER: user ? `✓ presente (${user})` : '✗ MANCANTE',
+      NEON_PASS: pass ? `✓ presente (${pass.length} caratteri)` : '✗ MANCANTE',
+      NEON_DB:   db   ? `✓ presente (${db})` : '✗ MANCANTE',
     });
   }
  
@@ -45,18 +49,19 @@ module.exports = async function handler(req, res) {
     });
   }
  
+  // ── Connection string con credenziali encoded ─────────
   const encodedUser = encodeURIComponent(user);
   const encodedPass = encodeURIComponent(pass);
   const connStr = `postgresql://${encodedUser}:${encodedPass}@${host}/${db}?sslmode=require`;
-  const auth    = Buffer.from(`${user}:${pass}`).toString('base64');
  
   try {
     const neonRes = await fetch(`https://${host}/sql`, {
       method: 'POST',
       headers: {
         'Content-Type':           'application/json',
-        'Authorization':          'Basic ' + auth,
         'Neon-Connection-String': connStr,
+        // Neon HTTP API: autenticazione tramite connection string nell'header,
+        // senza Basic Auth separato
       },
       body: JSON.stringify({ query: query.trim(), params }),
     });
