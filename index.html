@@ -188,7 +188,7 @@
   <div class="card">
     <h3>Schema SQL — incolla nel SQL Editor di Neon</h3>
     <pre id="sql-schema"><span class="xc">-- Un record per ogni giornata operativa del ristorante</span>
-<span class="sk">CREATE TABLE IF NOT EXISTS</span> incassi_giornalieri (
+<span class="sk">CREATE TABLE IF NOT EXISTS</span> incassi (
   id          <span class="xt">UUID</span>          <span class="sk">PRIMARY KEY DEFAULT</span> gen_random_uuid(),
   data        <span class="xt">DATE</span>          <span class="sk">NOT NULL UNIQUE</span>,
   pranzo      <span class="xt">NUMERIC(10,2)</span>,   <span class="xc">-- incasso pranzo</span>
@@ -206,9 +206,9 @@
   note        <span class="xt">TEXT</span>,
   created_at  <span class="xt">TIMESTAMPTZ</span> <span class="sk">DEFAULT</span> now()
 );
-<span class="sk">CREATE INDEX IF NOT EXISTS</span> idx_ig_data <span class="sk">ON</span> incassi_giornalieri(data);
-<span class="sk">CREATE INDEX IF NOT EXISTS</span> idx_ig_anno <span class="sk">ON</span> incassi_giornalieri(EXTRACT(YEAR FROM data));
-<span class="sk">CREATE INDEX IF NOT EXISTS</span> idx_ig_dow  <span class="sk">ON</span> incassi_giornalieri(EXTRACT(DOW FROM data));</pre>
+<span class="sk">CREATE INDEX IF NOT EXISTS</span> idx_ig_data <span class="sk">ON</span> incassi(data);
+<span class="sk">CREATE INDEX IF NOT EXISTS</span> idx_ig_anno <span class="sk">ON</span> incassi(EXTRACT(YEAR FROM data));
+<span class="sk">CREATE INDEX IF NOT EXISTS</span> idx_ig_dow  <span class="sk">ON</span> incassi(EXTRACT(DOW FROM data));</pre>
     <br><button class="btn btn-s" onclick="copySQL()">📋 Copia SQL</button>
   </div>
 </div>
@@ -326,10 +326,10 @@
 
   <div class="card">
     <h3>🔬 Query SQL Libera</h3>
-    <p class="subtitle" style="margin-bottom:16px">Scrivi qualsiasi query su <code style="color:var(--gold)">incassi_giornalieri</code></p>
+    <p class="subtitle" style="margin-bottom:16px">Scrivi qualsiasi query su <code style="color:var(--gold)">incassi</code></p>
     <label>SQL</label>
     <textarea id="r5-q" style="min-height:90px;font-size:12px;color:#8a9e6e;background:#060504;border-color:var(--border)"
-      placeholder="SELECT EXTRACT(DOW FROM data) AS dow, ROUND(AVG(totale),2) AS media&#10;FROM incassi_giornalieri&#10;WHERE EXTRACT(YEAR FROM data) = 2022&#10;GROUP BY 1 ORDER BY 1"></textarea>
+      placeholder="SELECT EXTRACT(DOW FROM data) AS dow, ROUND(AVG(totale),2) AS media&#10;FROM incassi&#10;WHERE EXTRACT(YEAR FROM data) = 2022&#10;GROUP BY 1 ORDER BY 1"></textarea>
     <br><br>
     <button class="btn btn-p" onclick="runR5()">▶ Esegui</button>
     <div id="r5r"></div>
@@ -409,7 +409,7 @@ async function saveRec() {
   if (!d) { showA('ia','ae','Seleziona una data.'); return; }
   try {
     await sql(`
-      INSERT INTO incassi_giornalieri
+      INSERT INTO incassi
         (data,pranzo,cena,totale,corrisp,pos,banca,cassa,ft,cp,cs,media_p,media_s,note)
       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)
       ON CONFLICT(data) DO UPDATE SET
@@ -435,8 +435,8 @@ async function loadList() {
   try {
     const [rows, years] = await Promise.all([
       sql(`SELECT id,data,pranzo,cena,totale,cp,cs,pos,cassa,note
-           FROM incassi_giornalieri ${wh} ORDER BY data DESC LIMIT 500`, p),
-      sql('SELECT DISTINCT EXTRACT(YEAR FROM data)::int AS y FROM incassi_giornalieri ORDER BY 1 DESC')
+           FROM incassi ${wh} ORDER BY data DESC LIMIT 500`, p),
+      sql('SELECT DISTINCT EXTRACT(YEAR FROM data)::int AS y FROM incassi ORDER BY 1 DESC')
     ]);
     const sel = document.getElementById('l-anno');
     const cur = sel.value;
@@ -484,7 +484,7 @@ function renderList(rows) {
 async function delRec(id, data) {
   if (!confirm('Eliminare la giornata del ' + fmtD(data) + '?')) return;
   try {
-    await sql('DELETE FROM incassi_giornalieri WHERE id=$1', [id]);
+    await sql('DELETE FROM incassi WHERE id=$1', [id]);
     showA('la','as','✓ Eliminato.'); loadList();
   } catch(e) { showA('la','ae','✗ ' + e.message); }
 }
@@ -506,9 +506,9 @@ async function runR1() {
         ROUND(SUM(${campo}),2) AS tot, ROUND(AVG(${campo}),2) AS avg,
         ROUND(MAX(${campo}),2) AS mx, ROUND(MIN(${campo}),2) AS mn,
         SUM(cp)::int AS cp, SUM(cs)::int AS cs
-        FROM incassi_giornalieri WHERE EXTRACT(DOW FROM data)=$1 ${yf}
+        FROM incassi WHERE EXTRACT(DOW FROM data)=$1 ${yf}
         AND ${campo} IS NOT NULL GROUP BY 1 ORDER BY 1`, p),
-      sql(`SELECT data,pranzo,cena,totale,cp,cs FROM incassi_giornalieri
+      sql(`SELECT data,pranzo,cena,totale,cp,cs FROM incassi
         WHERE EXTRACT(DOW FROM data)=$1 ${yf} ORDER BY data DESC LIMIT 300`, p)
     ]);
     if (!bY.rows.length) { document.getElementById('r1r').innerHTML='<div class="es">Nessun dato.</div>'; return; }
@@ -562,7 +562,7 @@ async function runR2() {
       COUNT(*) AS giorni, ROUND(SUM(totale),2) AS tot, ROUND(AVG(totale),2) AS avg,
       ROUND(SUM(pranzo),2) AS tp, ROUND(SUM(cena),2) AS tc,
       SUM(cp)::int AS tcp, SUM(cs)::int AS tcs
-      FROM incassi_giornalieri WHERE 1=1 ${yf} ${mf}
+      FROM incassi WHERE 1=1 ${yf} ${mf}
       GROUP BY 1,2 ORDER BY 1,2`, p);
     if (!r.rows.length) { document.getElementById('r2r').innerHTML='<div class="es">Nessun dato.</div>'; return; }
     let h = `<div class="orn">· · ·</div><div class="tw"><table>
@@ -600,7 +600,7 @@ async function runR3() {
   try {
     const r = await sql(`SELECT data,totale,pranzo,cena,cp,cs,note,
       EXTRACT(DOW FROM data)::int AS dow
-      FROM incassi_giornalieri ${wh}
+      FROM incassi ${wh}
       ORDER BY totale ${ord} NULLS LAST LIMIT $${p.length}`, p);
     if (!r.rows.length) { document.getElementById('r3r').innerHTML='<div class="es">Nessun dato.</div>'; return; }
     let h=`<div class="orn">· · ·</div><div class="tw"><table>
@@ -637,7 +637,7 @@ async function runR4() {
       ROUND(SUM(pos),2) AS tpos, ROUND(SUM(cassa),2) AS tcassa, ROUND(SUM(banca),2) AS tbanca,
       SUM(cp)::int AS tcp, SUM(cs)::int AS tcs,
       ROUND(AVG(media_p),2) AS avmp, ROUND(AVG(media_s),2) AS avms
-      FROM incassi_giornalieri ${wh} GROUP BY 1 ORDER BY 1`, p);
+      FROM incassi ${wh} GROUP BY 1 ORDER BY 1`, p);
     if(!r.rows.length){document.getElementById('r4r').innerHTML='<div class="es">Nessun dato.</div>';return;}
     let h='<div class="orn">· · ·</div>';
     r.rows.forEach(row=>{
