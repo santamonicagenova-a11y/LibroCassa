@@ -89,6 +89,43 @@
   .env-table td:first-child{color:var(--gold);font-family:'DM Mono',monospace;font-size:11px}
   .env-table td:nth-child(2){color:var(--text-dim)}
   @media(max-width:800px){header,nav,main{padding-left:20px;padding-right:20px}.fg{grid-template-columns:1fr 1fr}}
+  /* ── DOW Selector ── */
+  .dow-sel{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-top:8px}
+  .dow-opt{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--cream-dim);cursor:pointer;user-select:none}
+  .dow-opt input[type=checkbox]{
+    appearance:none;-webkit-appearance:none;
+    width:15px;height:15px;flex-shrink:0;
+    border:1px solid var(--border-light);border-radius:2px;
+    background:var(--input-bg);cursor:pointer;transition:all .15s;
+    background-repeat:no-repeat;background-position:center;background-size:10px;
+  }
+  .dow-opt input[type=checkbox]:checked{
+    background-color:var(--gold);border-color:var(--gold);
+    background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 10 10' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1.5 5l2.5 2.5 4.5-4' stroke='%231a1005' stroke-width='1.6' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  }
+  .dow-opt:hover input[type=checkbox]{border-color:var(--gold-dim);}
+  .dow-link{background:none;border:none;color:var(--text-dim);font-size:10px;cursor:pointer;padding:3px 8px;letter-spacing:.08em;text-transform:uppercase;font-family:'DM Mono',monospace;transition:color .15s;border:1px solid var(--border);border-radius:var(--radius)}
+  .dow-link:hover{color:var(--gold);border-color:var(--gold-dim)}
+  /* ── Chart Type Selector ── */
+  .chart-bar{display:none;margin-top:14px;padding-top:14px;border-top:1px solid var(--border)}
+  .chart-bar.show{display:flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:space-between}
+  .ct-opts{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  .ct-label{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-dim);margin-right:4px}
+  .ct-opt{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--cream-dim);cursor:pointer;user-select:none}
+  .ct-opt input[type=radio]{
+    appearance:none;-webkit-appearance:none;
+    width:15px;height:15px;flex-shrink:0;
+    border:1px solid var(--border-light);border-radius:50%;
+    background:var(--input-bg);cursor:pointer;transition:all .15s;
+    background-repeat:no-repeat;background-position:center;background-size:7px;
+  }
+  .ct-opt input[type=radio]:checked{
+    background-color:var(--gold);border-color:var(--gold);
+    background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 8 8' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='4' cy='4' r='2' fill='%231a1005'/%3E%3C/svg%3E");
+  }
+  .ct-opt:hover input[type=radio]{border-color:var(--gold-dim);}
+  .btn-print{background:none;border:1px solid var(--gold-dim);color:var(--gold);padding:7px 18px;border-radius:var(--radius);cursor:pointer;font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;transition:all .2s;flex-shrink:0}
+  .btn-print:hover{background:var(--gold-muted)}
 </style>
 </head>
 <body>
@@ -248,7 +285,7 @@
     <button class="btn btn-s" onclick="resetF()">↺ Azzera</button>
   </div>
   <div style="margin-top:32px;padding-top:16px;border-top:1px solid var(--border);text-align:right;font-size:10px;color:var(--text-dim);letter-spacing:.08em">
-    Libro Cassa &middot; v 2026.05.01.03
+    Libro Cassa &middot; v 2026.05.01.06
   </div>
 </div>
 
@@ -277,20 +314,41 @@
   <div id="ra" class="alert"></div>
 
   <div class="card">
-    <h3>📅 Incassi per Giorno della Settimana</h3>
-    <p class="subtitle" style="margin-bottom:16px">Es. "Tutte le domeniche del 2019 e 2022"</p>
+    <h3>📅 Incassi per Giorni della Settimana</h3>
+    <p class="subtitle" style="margin-bottom:16px">Selezione multipla giorni · filtra per anno e mese · confronto per anno</p>
+    <div style="margin-bottom:18px">
+      <label>Giorni della settimana</label>
+      <div class="dow-sel">
+        <label class="dow-opt"><input type="checkbox" name="r1-dow" value="1" checked> Lun</label>
+        <label class="dow-opt"><input type="checkbox" name="r1-dow" value="2" checked> Mar</label>
+        <label class="dow-opt"><input type="checkbox" name="r1-dow" value="3" checked> Mer</label>
+        <label class="dow-opt"><input type="checkbox" name="r1-dow" value="4" checked> Gio</label>
+        <label class="dow-opt"><input type="checkbox" name="r1-dow" value="5" checked> Ven</label>
+        <label class="dow-opt"><input type="checkbox" name="r1-dow" value="6" checked> Sab</label>
+        <label class="dow-opt"><input type="checkbox" name="r1-dow" value="0"> Dom</label>
+        <button class="dow-link" onclick="r1Sel(true)">Tutti</button>
+        <button class="dow-link" onclick="r1Sel(false)">Nessuno</button>
+      </div>
+    </div>
     <div class="fr">
-      <div class="f"><label>Giorno</label><select id="r1-g">
-        <option value="0">Domenica</option><option value="1">Lunedì</option><option value="2">Martedì</option>
-        <option value="3">Mercoledì</option><option value="4">Giovedì</option><option value="5">Venerdì</option><option value="6">Sabato</option>
+      <div class="f"><label>Anno da</label><input type="number" id="r1-ya" placeholder="2020" min="2016" max="2030" style="max-width:110px"></div>
+      <div class="f"><label>Anno a</label><input type="number" id="r1-yb" placeholder="2025" min="2016" max="2030" style="max-width:110px"></div>
+      <div class="f"><label>Mese (vuoto=tutti)</label><select id="r1-m">
+        <option value="0">Tutti</option>
+        <option value="1">Gennaio</option><option value="2">Febbraio</option><option value="3">Marzo</option><option value="4">Aprile</option>
+        <option value="5">Maggio</option><option value="6">Giugno</option><option value="7">Luglio</option><option value="8">Agosto</option>
+        <option value="9">Settembre</option><option value="10">Ottobre</option><option value="11">Novembre</option><option value="12">Dicembre</option>
       </select></div>
-      <div class="f"><label>Anni (vuoto=tutti)</label><input type="text" id="r1-a" placeholder="2019,2020,2022"></div>
       <div class="f"><label>Campo</label><select id="r1-c">
         <option value="totale">Totale</option><option value="pranzo">Pranzo</option><option value="cena">Cena</option>
       </select></div>
       <div><label>&nbsp;</label><button class="btn btn-p" onclick="runR1()">▶ Genera</button></div>
     </div>
-    <div id="r1r"></div>
+    <div id="r1-st" class="r-status"></div>
+    <div id="r1pb" class="chart-bar">
+      <div class="ct-opts"><span class="ct-label">Grafico</span><label class="ct-opt"><input type="radio" name="ct1" value="bar" checked>Barre</label><label class="ct-opt"><input type="radio" name="ct1" value="line">Linee</label><label class="ct-opt"><input type="radio" name="ct1" value="pie">Torta</label><label class="ct-opt"><input type="radio" name="ct1" value="scatter">Dispersione</label><label class="ct-opt"><input type="radio" name="ct1" value="histogram">Istogramma</label></div>
+      <button class="btn-print" onclick="printChart(1,'Incassi per Giorni della Settimana')">🖨 Stampa</button>
+    </div>
   </div>
 
   <div class="card">
@@ -500,63 +558,61 @@ async function delRec(id, data) {
 }
 
 // ─── R1: Giorno settimana ─────────────────────────────────────
+function r1Sel(v) {
+  document.querySelectorAll('input[name="r1-dow"]').forEach(cb => cb.checked = v);
+}
+
 async function runR1() {
-  const dow = document.getElementById('r1-g').value;
-  const anniS = document.getElementById('r1-a').value.trim();
+  const NOMI = ['Dom','Lun','Mar','Mer','Gio','Ven','Sab'];
+  const dows = [...document.querySelectorAll('input[name="r1-dow"]:checked')].map(cb => parseInt(cb.value));
+  if (!dows.length) { document.getElementById('r1-st').innerHTML='<span style="color:var(--red)">Seleziona almeno un giorno.</span>'; return; }
   const campo = document.getElementById('r1-c').value;
-  const NOMI = ['Domenica','Lunedì','Martedì','Mercoledì','Giovedì','Venerdì','Sabato'];
-  let yf = ''; const p = [parseInt(dow)];
-  if (anniS) {
-    const anni = anniS.split(',').map(a => parseInt(a.trim())).filter(Boolean);
-    p.push(anni); yf = `AND EXTRACT(YEAR FROM data)=ANY($2)`;
-  }
+  const ya    = parseInt(document.getElementById('r1-ya').value) || null;
+  const yb    = parseInt(document.getElementById('r1-yb').value) || null;
+  const mese  = parseInt(document.getElementById('r1-m').value)  || null;
+
+  const p = [dows];
+  let wh = 'WHERE EXTRACT(DOW FROM data) = ANY($1) AND ' + campo + ' IS NOT NULL';
+  if (ya)   { p.push(ya);   wh += ' AND EXTRACT(YEAR FROM data) >= $' + p.length; }
+  if (yb)   { p.push(yb);   wh += ' AND EXTRACT(YEAR FROM data) <= $' + p.length; }
+  if (mese) { p.push(mese); wh += ' AND EXTRACT(MONTH FROM data) = $' + p.length; }
+
+  const st = document.getElementById('r1-st');
+  st.innerHTML = '<span style="color:var(--text-dim)">&#9203; Caricamento...</span>';
   try {
-    const [bY, det] = await Promise.all([
-      sql(`SELECT EXTRACT(YEAR FROM data)::int AS anno, COUNT(*) AS n,
-        ROUND(SUM(${campo}),2) AS tot, ROUND(AVG(${campo}),2) AS avg,
-        ROUND(MAX(${campo}),2) AS mx, ROUND(MIN(${campo}),2) AS mn,
-        SUM(cp)::int AS cp, SUM(cs)::int AS cs
-        FROM incassi WHERE EXTRACT(DOW FROM data)=$1 ${yf}
-        AND ${campo} IS NOT NULL GROUP BY 1 ORDER BY 1`, p),
-      sql(`SELECT data,pranzo,cena,totale,cp,cs FROM incassi
-        WHERE EXTRACT(DOW FROM data)=$1 ${yf} ORDER BY data DESC LIMIT 300`, p)
+    const [byDowAnno, allDet] = await Promise.all([
+      sql('SELECT EXTRACT(DOW FROM data)::int AS dow, EXTRACT(YEAR FROM data)::int AS anno,' +
+          ' COUNT(*) AS n, ROUND(AVG(' + campo + '),2) AS avg, ROUND(SUM(' + campo + '),2) AS tot' +
+          ' FROM incassi ' + wh + ' GROUP BY 1,2 ORDER BY 2,1', p),
+      sql('SELECT data, EXTRACT(DOW FROM data)::int AS dow, ' + campo + ' AS val' +
+          ' FROM incassi ' + wh + ' ORDER BY data', p)
     ]);
-    if (!bY.rows.length) { document.getElementById('r1r').innerHTML='<div class="es">Nessun dato.</div>'; return; }
-    const totAll = bY.rows.reduce((s,r) => s+(+(r.tot||0)), 0);
-    const nAll   = bY.rows.reduce((s,r) => s+parseInt(r.n), 0);
-    let h = `<div class="orn">· · ·</div>
-    <h3 style="margin-bottom:12px">Tutti i ${NOMI[dow]} — ${campo}</h3>
-    <div class="sg">
-      <div class="sc"><div class="sl">Giornate</div><div class="sv">${nAll}</div></div>
-      <div class="sc"><div class="sl">Totale</div><div class="sv">${fmt(totAll)}</div><div class="ss">€</div></div>
-      <div class="sc"><div class="sl">Media/giorno</div><div class="sv">${fmt(totAll/nAll)}</div><div class="ss">€</div></div>
-    </div>
-    <h3 style="margin:20px 0 12px">Per anno</h3>
-    <div class="tw"><table><thead><tr><th>Anno</th><th class="r">N.</th><th class="r">Totale</th><th class="r">Media</th>
-    <th class="r" style="color:var(--green)">Max</th><th class="r" style="color:var(--red)">Min</th>
-    <th class="r">Cop.P</th><th class="r">Cop.S</th></tr></thead><tbody>`;
-    bY.rows.forEach(r => {
-      h += `<tr><td class="g"><span class="yb">${r.anno}</span></td>
-        <td class="r">${r.n}</td><td class="r">${fmt(r.tot)}</td><td class="r">${fmt(r.avg)}</td>
-        <td class="r" style="color:var(--green)">${fmt(r.mx)}</td>
-        <td class="r" style="color:var(--red)">${fmt(r.mn)}</td>
-        <td class="r d">${r.cp||'—'}</td><td class="r d">${r.cs||'—'}</td></tr>`;
-    });
-    h += `</tbody></table></div>
-    <h3 style="margin:20px 0 12px">Dettaglio (ultime 300)</h3>
-    <div class="tw"><table><thead><tr><th>Data</th><th class="r">${campo}</th>
-    <th class="r">Pranzo</th><th class="r">Cena</th><th class="r">CP</th><th class="r">CS</th>
-    </tr></thead><tbody>`;
-    det.rows.forEach(r => {
-      h += `<tr><td class="g">${fmtD(r.data)} <span class="tg ts">${NOMI[dow].slice(0,3)}</span></td>
-        <td class="r">${fmt(r[campo])}</td>
-        <td class="r d">${r.pranzo?fmt(r.pranzo):'—'}</td>
-        <td class="r d">${r.cena?fmt(r.cena):'—'}</td>
-        <td class="r d">${r.cp??'—'}</td><td class="r d">${r.cs??'—'}</td></tr>`;
-    });
-    h += '</tbody></table></div>';
-    document.getElementById('r1r').innerHTML = h;
-  } catch(e) { document.getElementById('r1r').innerHTML=`<div class="alert ae show">${e.message}</div>`; }
+    if (!byDowAnno.rows.length) { st.innerHTML='<span style="color:var(--red)">Nessun dato trovato.</span>'; return; }
+
+    const anni = [...new Set(byDowAnno.rows.map(r => r.anno))].sort();
+    const map  = {};
+    byDowAnno.rows.forEach(r => { map[r.dow + '_' + r.anno] = parseFloat(r.avg) || 0; });
+    const totGiornate = byDowAnno.rows.reduce((s, r) => s + parseInt(r.n), 0);
+
+    const rangeLabel = (ya || yb) ? ((ya || '\u221e') + '\u2192' + (yb || '\u221e')) : 'tutti gli anni';
+    const MN = [,'Gen','Feb','Mar','Apr','Mag','Giu','Lug','Ago','Set','Ott','Nov','Dic'];
+    const meseLabel = mese ? MN[mese] : '';
+    const titleParts = ['Gg: ' + dows.map(d => NOMI[d]).join('+'), rangeLabel, meseLabel].filter(Boolean);
+
+    window._CD[1] = {
+      title: titleParts.join(' \u00B7 ') + ' \u2014 ' + campo,
+      labels: anni.map(String),
+      datasets: dows.map(dow => ({
+        label: NOMI[dow],
+        data: anni.map(a => map[dow + '_' + a] || 0)
+      })),
+      scatterData: allDet.rows.map(r => ({ x: r.data.split('T')[0], y: parseFloat(r.val) || 0 }))
+    };
+
+    st.innerHTML = '<span style="color:var(--green)">\u2713 ' +
+      dows.map(d => NOMI[d]).join('+') + ' \u00B7 ' + anni.length + ' anni \u00B7 ' + totGiornate + ' giornate pronte</span>';
+    document.getElementById('r1pb').classList.add('show');
+  } catch(e) { st.innerHTML = '<span style="color:var(--red)">\u2717 ' + e.message + '</span>'; }
 }
 
 // ─── R2: Mensile ──────────────────────────────────────────────
