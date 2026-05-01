@@ -89,6 +89,10 @@
   .env-table td:first-child{color:var(--gold);font-family:'DM Mono',monospace;font-size:11px}
   .env-table td:nth-child(2){color:var(--text-dim)}
   @media(max-width:800px){header,nav,main{padding-left:20px;padding-right:20px}.fg{grid-template-columns:1fr 1fr}}
+  .print-bar{display:none;margin-top:16px;padding-top:14px;border-top:1px solid var(--border);text-align:right}
+  .print-bar.show{display:block}
+  .btn-print{background:none;border:1px solid var(--border-light);color:var(--text-dim);padding:7px 16px;border-radius:var(--radius);cursor:pointer;font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;transition:all .2s}
+  .btn-print:hover{border-color:var(--gold-dim);color:var(--gold)}
 </style>
 </head>
 <body>
@@ -242,6 +246,9 @@
     <button class="btn btn-p" onclick="saveRec()">💾 Salva</button>
     <button class="btn btn-s" onclick="resetF()">↺ Azzera</button>
   </div>
+  <div style="margin-top:32px;padding-top:16px;border-top:1px solid var(--border);text-align:right;font-size:10px;color:var(--text-dim);letter-spacing:.08em">
+    Libro Cassa · v 2026.04.25.02
+  </div>
 </div>
 
 <!-- ══ LIST ══ -->
@@ -283,6 +290,7 @@
       <div><label>&nbsp;</label><button class="btn btn-p" onclick="runR1()">▶ Genera</button></div>
     </div>
     <div id="r1r"></div>
+    <div id="r1pb" class="print-bar"><button class="btn-print" onclick="printReport('r1r','Incassi per Giorno della Settimana')">🖨 Stampa report</button></div>
   </div>
 
   <div class="card">
@@ -299,6 +307,7 @@
       <div><label>&nbsp;</label><button class="btn btn-p" onclick="runR2()">▶ Genera</button></div>
     </div>
     <div id="r2r"></div>
+    <div id="r2pb" class="print-bar"><button class="btn-print" onclick="printReport('r2r','Confronto Mensile per Anno')">🖨 Stampa report</button></div>
   </div>
 
   <div class="card">
@@ -312,6 +321,7 @@
       <div><label>&nbsp;</label><button class="btn btn-p" onclick="runR3()">▶ Genera</button></div>
     </div>
     <div id="r3r"></div>
+    <div id="r3pb" class="print-bar"><button class="btn-print" onclick="printReport('r3r','Top / Worst Giorni')">🖨 Stampa report</button></div>
   </div>
 
   <div class="card">
@@ -322,6 +332,7 @@
       <div><label>&nbsp;</label><button class="btn btn-p" onclick="runR4()">▶ Genera</button></div>
     </div>
     <div id="r4r"></div>
+    <div id="r4pb" class="print-bar"><button class="btn-print" onclick="printReport('r4r','Riepilogo Annuale')">🖨 Stampa report</button></div>
   </div>
 
   <div class="card">
@@ -333,6 +344,7 @@
     <br><br>
     <button class="btn btn-p" onclick="runR5()">▶ Esegui</button>
     <div id="r5r"></div>
+    <div id="r5pb" class="print-bar"><button class="btn-print" onclick="printReport('r5r','Query SQL Libera')">🖨 Stampa report</button></div>
   </div>
 </div>
 </main>
@@ -489,7 +501,49 @@ async function delRec(id, data) {
   } catch(e) { showA('la','ae','✗ ' + e.message); }
 }
 
-// ─── R1: Giorno settimana ─────────────────────────────────────
+// ─── STAMPA REPORT ────────────────────────────────────────────
+function printReport(containerId, title) {
+  const content = document.getElementById(containerId).innerHTML;
+  const w = window.open('', '_blank', 'width=900,height=700');
+  w.document.write(`<!DOCTYPE html><html lang="it"><head>
+  <meta charset="UTF-8">
+  <title>Libro Cassa — ${title}</title>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Segoe UI',Arial,sans-serif;font-size:12px;color:#111;background:#fff;padding:24px 32px}
+    h1{font-size:18px;font-weight:600;margin-bottom:4px;color:#111}
+    .subtitle{font-size:11px;color:#666;margin-bottom:20px}
+    table{width:100%;border-collapse:collapse;margin-top:12px}
+    th{background:#f0f0f0;border:1px solid #ccc;padding:5px 8px;font-size:11px;text-align:left}
+    td{border:1px solid #ddd;padding:5px 8px;font-size:11px}
+    .r{text-align:right}
+    .sg{display:flex;gap:16px;margin:12px 0;flex-wrap:wrap}
+    .sc{background:#f8f8f8;border:1px solid #ddd;border-radius:4px;padding:10px 16px;min-width:120px}
+    .sl{font-size:10px;color:#666;text-transform:uppercase;letter-spacing:.05em}
+    .sv{font-size:18px;font-weight:700;margin-top:2px}
+    .ss{font-size:10px;color:#888}
+    .yb{background:#f0f0f0;border-radius:3px;padding:2px 6px;font-weight:600}
+    .tg{border-radius:3px;padding:1px 5px;font-size:10px}
+    .ts{background:#f5e6c0;color:#7a5a10}
+    .tb{background:#d4edda;color:#155724}
+    .tw2{background:#f8d7da;color:#721c24}
+    h3{font-size:14px;font-weight:600;margin:16px 0 8px}
+    .orn{text-align:center;color:#bbb;margin:8px 0 16px;letter-spacing:.3em}
+    .tot td{font-weight:700;background:#f8f8f8}
+    @page{margin:1.5cm}
+    @media print{body{padding:0}}
+  </style>
+  </head><body>
+  <h1>📊 ${title}</h1>
+  <div class="subtitle">Libro Cassa — Stampato il ${new Date().toLocaleDateString('it-IT',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'})}</div>
+  ${content}
+  </body></html>`);
+  w.document.close();
+  w.focus();
+  setTimeout(() => w.print(), 400);
+}
+
+
 async function runR1() {
   const dow = document.getElementById('r1-g').value;
   const anniS = document.getElementById('r1-a').value.trim();
@@ -546,6 +600,7 @@ async function runR1() {
     });
     h += '</tbody></table></div>';
     document.getElementById('r1r').innerHTML = h;
+    document.getElementById('r1pb').classList.add('show');
   } catch(e) { document.getElementById('r1r').innerHTML=`<div class="alert ae show">${e.message}</div>`; }
 }
 
@@ -584,6 +639,7 @@ async function runR2() {
     h+=`<tr class="tot"><td colspan="3">TOTALE</td><td class="r">${fmt(gt)}</td><td colspan="5"></td></tr>`;
     h+='</tbody></table></div>';
     document.getElementById('r2r').innerHTML = h;
+    document.getElementById('r2pb').classList.add('show');
   } catch(e) { document.getElementById('r2r').innerHTML=`<div class="alert ae show">${e.message}</div>`; }
 }
 
@@ -621,6 +677,7 @@ async function runR3() {
     });
     h+='</tbody></table></div>';
     document.getElementById('r3r').innerHTML=h;
+    document.getElementById('r3pb').classList.add('show');
   } catch(e) { document.getElementById('r3r').innerHTML=`<div class="alert ae show">${e.message}</div>`; }
 }
 
@@ -663,6 +720,7 @@ async function runR4() {
       </div>`;
     });
     document.getElementById('r4r').innerHTML=h;
+    document.getElementById('r4pb').classList.add('show');
   } catch(e) { document.getElementById('r4r').innerHTML=`<div class="alert ae show">${e.message}</div>`; }
 }
 
@@ -679,6 +737,7 @@ async function runR5() {
     r.rows.forEach(row=>{ h+='<tr>'+fields.map(f=>`<td class="r">${row[f]??'—'}</td>`).join('')+'</tr>'; });
     h+=`</tbody></table><div class="d" style="padding:8px 12px">${r.rowCount} righe</div></div>`;
     document.getElementById('r5r').innerHTML=h;
+    document.getElementById('r5pb').classList.add('show');
   } catch(e) { document.getElementById('r5r').innerHTML=`<div class="alert ae show" style="margin-top:12px">${e.message}</div>`; }
 }
 
