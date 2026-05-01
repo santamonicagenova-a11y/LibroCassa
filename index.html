@@ -89,16 +89,6 @@
   .env-table td:first-child{color:var(--gold);font-family:'DM Mono',monospace;font-size:11px}
   .env-table td:nth-child(2){color:var(--text-dim)}
   @media(max-width:800px){header,nav,main{padding-left:20px;padding-right:20px}.fg{grid-template-columns:1fr 1fr}}
-  .r-status{min-height:22px;font-size:11px;margin:10px 0 4px;letter-spacing:.04em}
-  .chart-bar{display:none;margin-top:14px;padding-top:14px;border-top:1px solid var(--border)}
-  .chart-bar.show{display:flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:space-between}
-  .ct-opts{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
-  .ct-label{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-dim);margin-right:4px}
-  .ct-opt{font-size:11px;color:var(--cream-dim);cursor:pointer;padding:4px 10px;border:1px solid var(--border);border-radius:var(--radius);transition:all .15s;user-select:none}
-  .ct-opt:has(input:checked){border-color:var(--gold-dim);color:var(--gold);background:var(--gold-muted)}
-  .ct-opt input{display:none}
-  .btn-print{background:none;border:1px solid var(--gold-dim);color:var(--gold);padding:7px 18px;border-radius:var(--radius);cursor:pointer;font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;transition:all .2s;flex-shrink:0}
-  .btn-print:hover{background:var(--gold-muted)}
 </style>
 </head>
 <body>
@@ -198,7 +188,7 @@
   <div class="card">
     <h3>Schema SQL — incolla nel SQL Editor di Neon</h3>
     <pre id="sql-schema"><span class="xc">-- Un record per ogni giornata operativa del ristorante</span>
-<span class="sk">CREATE TABLE IF NOT EXISTS</span> incassi (
+<span class="sk">CREATE TABLE IF NOT EXISTS</span> incassi_giornalieri (
   id          <span class="xt">UUID</span>          <span class="sk">PRIMARY KEY DEFAULT</span> gen_random_uuid(),
   data        <span class="xt">DATE</span>          <span class="sk">NOT NULL UNIQUE</span>,
   pranzo      <span class="xt">NUMERIC(10,2)</span>,   <span class="xc">-- incasso pranzo</span>
@@ -216,9 +206,9 @@
   note        <span class="xt">TEXT</span>,
   created_at  <span class="xt">TIMESTAMPTZ</span> <span class="sk">DEFAULT</span> now()
 );
-<span class="sk">CREATE INDEX IF NOT EXISTS</span> idx_ig_data <span class="sk">ON</span> incassi(data);
-<span class="sk">CREATE INDEX IF NOT EXISTS</span> idx_ig_anno <span class="sk">ON</span> incassi(EXTRACT(YEAR FROM data));
-<span class="sk">CREATE INDEX IF NOT EXISTS</span> idx_ig_dow  <span class="sk">ON</span> incassi(EXTRACT(DOW FROM data));</pre>
+<span class="sk">CREATE INDEX IF NOT EXISTS</span> idx_ig_data <span class="sk">ON</span> incassi_giornalieri(data);
+<span class="sk">CREATE INDEX IF NOT EXISTS</span> idx_ig_anno <span class="sk">ON</span> incassi_giornalieri(EXTRACT(YEAR FROM data));
+<span class="sk">CREATE INDEX IF NOT EXISTS</span> idx_ig_dow  <span class="sk">ON</span> incassi_giornalieri(EXTRACT(DOW FROM data));</pre>
     <br><button class="btn btn-s" onclick="copySQL()">📋 Copia SQL</button>
   </div>
 </div>
@@ -228,7 +218,12 @@
   <h2>Inserimento Giornata</h2>
   <p class="subtitle">Registra gli incassi per una singola giornata. Se la data esiste già, il record viene aggiornato.</p>
   <div id="ia" class="alert"></div>
-  <div class="card"><h3>Data</h3><div style="max-width:220px"><label>Data operativa</label><input type="date" id="f-data"></div></div>
+  <div class="card"><h3>Data</h3>
+    <div style="display:flex;align-items:flex-end;gap:16px;flex-wrap:wrap">
+      <div style="max-width:220px"><label>Data operativa</label><input type="date" id="f-data" onchange="loadDay(this.value)"></div>
+      <div id="day-badge" style="font-size:11px;letter-spacing:.06em;padding-bottom:10px;color:var(--text-dim)"></div>
+    </div>
+  </div>
   <div class="card"><h3>Incassi (€)</h3><div class="fg">
     <div><label>Pranzo</label><input type="number" id="f-pranzo" step="0.5" min="0" placeholder="0.00" oninput="calcT()"></div>
     <div><label>Cena</label><input type="number" id="f-cena" step="0.5" min="0" placeholder="0.00" oninput="calcT()"></div>
@@ -251,9 +246,6 @@
   <div class="btn-row">
     <button class="btn btn-p" onclick="saveRec()">💾 Salva</button>
     <button class="btn btn-s" onclick="resetF()">↺ Azzera</button>
-  </div>
-  <div style="margin-top:32px;padding-top:16px;border-top:1px solid var(--border);text-align:right;font-size:10px;color:var(--text-dim);letter-spacing:.08em">
-    Libro Cassa · v 2026.04.25.02
   </div>
 </div>
 
@@ -278,7 +270,7 @@
 <!-- ══ REPORTS ══ -->
 <div id="tab-reports" class="tab-pane">
   <h2>Report &amp; Analisi</h2>
-  <p class="subtitle">Configura il report, scegli il tipo di grafico e clicca Stampa.</p>
+  <p class="subtitle">Query SQL dirette su Neon — nessuna limitazione.</p>
   <div id="ra" class="alert"></div>
 
   <div class="card">
@@ -295,16 +287,12 @@
       </select></div>
       <div><label>&nbsp;</label><button class="btn btn-p" onclick="runR1()">▶ Genera</button></div>
     </div>
-    <div id="r1-st" class="r-status"></div>
-    <div id="r1pb" class="chart-bar">
-      <div class="ct-opts"><span class="ct-label">Grafico</span><label class="ct-opt"><input type="radio" name="ct1" value="bar"  checked>Barre</label><label class="ct-opt"><input type="radio" name="ct1" value="line">Linee</label><label class="ct-opt"><input type="radio" name="ct1" value="pie">Torta</label><label class="ct-opt"><input type="radio" name="ct1" value="scatter">Dispersione</label><label class="ct-opt"><input type="radio" name="ct1" value="histogram">Istogramma</label></div>
-      <button class="btn-print" onclick="printChart(1,'Incassi per Giorno della Settimana')">🖨 Stampa</button>
-    </div>
+    <div id="r1r"></div>
   </div>
 
   <div class="card">
     <h3>📊 Confronto Mensile per Anno</h3>
-    <p class="subtitle" style="margin-bottom:16px">Totale mensile su più anni a confronto</p>
+    <p class="subtitle" style="margin-bottom:16px">Totale e media mensile su più anni a confronto</p>
     <div class="fr">
       <div class="f"><label>Anni (es: 2021,2022,2023)</label><input type="text" id="r2-a" placeholder="2021,2022,2023"></div>
       <div class="f"><label>Mese</label><select id="r2-m">
@@ -315,11 +303,7 @@
       </select></div>
       <div><label>&nbsp;</label><button class="btn btn-p" onclick="runR2()">▶ Genera</button></div>
     </div>
-    <div id="r2-st" class="r-status"></div>
-    <div id="r2pb" class="chart-bar">
-      <div class="ct-opts"><span class="ct-label">Grafico</span><label class="ct-opt"><input type="radio" name="ct2" value="bar"  checked>Barre</label><label class="ct-opt"><input type="radio" name="ct2" value="line">Linee</label><label class="ct-opt"><input type="radio" name="ct2" value="pie">Torta</label><label class="ct-opt"><input type="radio" name="ct2" value="scatter">Dispersione</label><label class="ct-opt"><input type="radio" name="ct2" value="histogram">Istogramma</label></div>
-      <button class="btn-print" onclick="printChart(2,'Confronto Mensile per Anno')">🖨 Stampa</button>
-    </div>
+    <div id="r2r"></div>
   </div>
 
   <div class="card">
@@ -332,11 +316,7 @@
       <div class="f"><label>Ordine</label><select id="r3-o"><option value="DESC">Migliori ↓</option><option value="ASC">Peggiori ↑</option></select></div>
       <div><label>&nbsp;</label><button class="btn btn-p" onclick="runR3()">▶ Genera</button></div>
     </div>
-    <div id="r3-st" class="r-status"></div>
-    <div id="r3pb" class="chart-bar">
-      <div class="ct-opts"><span class="ct-label">Grafico</span><label class="ct-opt"><input type="radio" name="ct3" value="bar"  checked>Barre</label><label class="ct-opt"><input type="radio" name="ct3" value="line">Linee</label><label class="ct-opt"><input type="radio" name="ct3" value="pie">Torta</label><label class="ct-opt"><input type="radio" name="ct3" value="scatter">Dispersione</label><label class="ct-opt"><input type="radio" name="ct3" value="histogram">Istogramma</label></div>
-      <button class="btn-print" onclick="printChart(3,'Top / Worst Giorni')">🖨 Stampa</button>
-    </div>
+    <div id="r3r"></div>
   </div>
 
   <div class="card">
@@ -346,26 +326,18 @@
       <div class="f"><label>Anno (vuoto=tutti)</label><input type="text" id="r4-a" placeholder="es. 2023"></div>
       <div><label>&nbsp;</label><button class="btn btn-p" onclick="runR4()">▶ Genera</button></div>
     </div>
-    <div id="r4-st" class="r-status"></div>
-    <div id="r4pb" class="chart-bar">
-      <div class="ct-opts"><span class="ct-label">Grafico</span><label class="ct-opt"><input type="radio" name="ct4" value="bar"  checked>Barre</label><label class="ct-opt"><input type="radio" name="ct4" value="line">Linee</label><label class="ct-opt"><input type="radio" name="ct4" value="pie">Torta</label><label class="ct-opt"><input type="radio" name="ct4" value="scatter">Dispersione</label><label class="ct-opt"><input type="radio" name="ct4" value="histogram">Istogramma</label></div>
-      <button class="btn-print" onclick="printChart(4,'Riepilogo Annuale')">🖨 Stampa</button>
-    </div>
+    <div id="r4r"></div>
   </div>
 
   <div class="card">
     <h3>🔬 Query SQL Libera</h3>
-    <p class="subtitle" style="margin-bottom:16px">Scrivi qualsiasi query su <code style="color:var(--gold)">incassi</code></p>
+    <p class="subtitle" style="margin-bottom:16px">Scrivi qualsiasi query su <code style="color:var(--gold)">incassi_giornalieri</code></p>
     <label>SQL</label>
     <textarea id="r5-q" style="min-height:90px;font-size:12px;color:#8a9e6e;background:#060504;border-color:var(--border)"
-      placeholder="SELECT EXTRACT(DOW FROM data) AS dow, ROUND(AVG(totale),2) AS media&#10;FROM incassi&#10;WHERE EXTRACT(YEAR FROM data) = 2022&#10;GROUP BY 1 ORDER BY 1"></textarea>
+      placeholder="SELECT EXTRACT(DOW FROM data) AS dow, ROUND(AVG(totale),2) AS media&#10;FROM incassi_giornalieri&#10;WHERE EXTRACT(YEAR FROM data) = 2022&#10;GROUP BY 1 ORDER BY 1"></textarea>
     <br><br>
     <button class="btn btn-p" onclick="runR5()">▶ Esegui</button>
-    <div id="r5-st" class="r-status"></div>
-    <div id="r5pb" class="chart-bar">
-      <div class="ct-opts"><span class="ct-label">Grafico</span><label class="ct-opt"><input type="radio" name="ct5" value="bar"  checked>Barre</label><label class="ct-opt"><input type="radio" name="ct5" value="line">Linee</label><label class="ct-opt"><input type="radio" name="ct5" value="pie">Torta</label><label class="ct-opt"><input type="radio" name="ct5" value="scatter">Dispersione</label><label class="ct-opt"><input type="radio" name="ct5" value="histogram">Istogramma</label></div>
-      <button class="btn-print" onclick="printChart(5,'Query SQL Libera')">🖨 Stampa</button>
-    </div>
+    <div id="r5r"></div>
   </div>
 </div>
 </main>
@@ -431,7 +403,9 @@ function calcT() {
 function resetF() {
   ['f-pranzo','f-cena','f-totale','f-corrisp','f-pos','f-banca','f-cassa','f-ft','f-cp','f-cs','f-mp','f-ms','f-note']
     .forEach(id => document.getElementById(id).value = '');
-  document.getElementById('f-data').value = new Date().toISOString().split('T')[0];
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('f-data').value = today;
+  loadDay(today);
   hideA('ia');
 }
 const fv = id => { const v = document.getElementById(id).value; return v === '' ? null : parseFloat(v); };
@@ -442,7 +416,7 @@ async function saveRec() {
   if (!d) { showA('ia','ae','Seleziona una data.'); return; }
   try {
     await sql(`
-      INSERT INTO incassi
+      INSERT INTO incassi_giornalieri
         (data,pranzo,cena,totale,corrisp,pos,banca,cassa,ft,cp,cs,media_p,media_s,note)
       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)
       ON CONFLICT(data) DO UPDATE SET
@@ -468,8 +442,8 @@ async function loadList() {
   try {
     const [rows, years] = await Promise.all([
       sql(`SELECT id,data,pranzo,cena,totale,cp,cs,pos,cassa,note
-           FROM incassi ${wh} ORDER BY data DESC LIMIT 500`, p),
-      sql('SELECT DISTINCT EXTRACT(YEAR FROM data)::int AS y FROM incassi ORDER BY 1 DESC')
+           FROM incassi_giornalieri ${wh} ORDER BY data DESC LIMIT 500`, p),
+      sql('SELECT DISTINCT EXTRACT(YEAR FROM data)::int AS y FROM incassi_giornalieri ORDER BY 1 DESC')
     ]);
     const sel = document.getElementById('l-anno');
     const cur = sel.value;
@@ -517,125 +491,9 @@ function renderList(rows) {
 async function delRec(id, data) {
   if (!confirm('Eliminare la giornata del ' + fmtD(data) + '?')) return;
   try {
-    await sql('DELETE FROM incassi WHERE id=$1', [id]);
+    await sql('DELETE FROM incassi_giornalieri WHERE id=$1', [id]);
     showA('la','as','✓ Eliminato.'); loadList();
   } catch(e) { showA('la','ae','✗ ' + e.message); }
-}
-
-// ─── CHART DATA STORE ─────────────────────────────────────────
-window._CD = {};
-
-// ─── PRINT CHART ──────────────────────────────────────────────
-function buildHistogram(values, bins) {
-  bins = bins || 15;
-  const mn = Math.min(...values), mx = Math.max(...values);
-  const step = (mx - mn) / bins || 1;
-  const counts = Array(bins).fill(0);
-  const labels = [];
-  for (let i = 0; i < bins; i++) {
-    const lo = mn + i * step, hi = mn + (i + 1) * step;
-    labels.push(Math.round(lo) + '–' + Math.round(hi));
-  }
-  values.forEach(v => {
-    const idx = Math.min(Math.floor((v - mn) / step), bins - 1);
-    counts[idx]++;
-  });
-  return { labels, counts };
-}
-
-function printChart(n, defaultTitle) {
-  const cd = window._CD[n];
-  if (!cd) return;
-  const chartType = (document.querySelector('input[name="ct' + n + '"]:checked') || {}).value || 'bar';
-  const title = cd.title || defaultTitle;
-  const PAL = ['#c9a84c','#4ade80','#60a5fa','#f87171','#a78bfa','#fb923c','#34d399','#fbbf24'];
-
-  let cfg;
-
-  if (chartType === 'histogram') {
-    const vals = (cd.scatterData || []).map(p => p.y).filter(v => v != null && v > 0);
-    if (!vals.length) { alert('Nessun valore numerico positivo per l\'istogramma.'); return; }
-    const h = buildHistogram(vals, 15);
-    cfg = {
-      type: 'bar',
-      data: { labels: h.labels, datasets: [{ label: 'Frequenza', data: h.counts,
-        backgroundColor: '#c9a84c88', borderColor: '#c9a84c', borderWidth: 1,
-        barPercentage: 1, categoryPercentage: 1 }] },
-      options: { responsive: true,
-        plugins: { title: { display: true, text: title + ' — Distribuzione', font: { size: 15 } }, legend: { display: false } },
-        scales: { x: { grid: { display: false }, title: { display: true, text: '€' } },
-                  y: { title: { display: true, text: 'Giorni' } } } }
-    };
-
-  } else if (chartType === 'scatter') {
-    const sd = cd.scatterData || [];
-    // x might be string dates — convert to index if so
-    const useIndex = typeof sd[0]?.x === 'string' && isNaN(Number(sd[0]?.x));
-    cfg = {
-      type: 'scatter',
-      data: { datasets: [{ label: title,
-        data: sd.map((p, i) => ({ x: useIndex ? i : p.x, y: p.y })),
-        backgroundColor: '#c9a84c99', pointRadius: 4, pointHoverRadius: 6 }] },
-      options: { responsive: true,
-        plugins: { title: { display: true, text: title, font: { size: 15 } } },
-        scales: { y: { title: { display: true, text: '€' } } } }
-    };
-
-  } else if (chartType === 'pie') {
-    const ds = cd.datasets[0] || {};
-    cfg = {
-      type: 'pie',
-      data: { labels: cd.labels,
-        datasets: [{ data: ds.data || [], backgroundColor: PAL.slice(0, cd.labels.length) }] },
-      options: { responsive: true,
-        plugins: { title: { display: true, text: title, font: { size: 15 } },
-          legend: { position: 'right' } } }
-    };
-
-  } else {
-    // bar or line
-    cfg = {
-      type: chartType,
-      data: { labels: cd.labels,
-        datasets: cd.datasets.map((ds, i) => ({
-          label: ds.label, data: ds.data,
-          backgroundColor: chartType === 'bar' ? PAL[i % PAL.length] + '99' : 'transparent',
-          borderColor: PAL[i % PAL.length], borderWidth: 2,
-          tension: 0.35,
-          pointRadius: chartType === 'line' ? 3 : 0,
-          pointHoverRadius: 5
-        })) },
-      options: { responsive: true,
-        plugins: { title: { display: true, text: title, font: { size: 15 } } },
-        scales: { y: { beginAtZero: false, title: { display: true, text: '€' } } } }
-    };
-  }
-
-  const stampato = new Date().toLocaleDateString('it-IT',
-    { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
-
-  const w = window.open('', '_blank', 'width=1100,height=750');
-  w.document.write('<!DOCTYPE html><html lang="it"><head>' +
-    '<meta charset="UTF-8"><title>Libro Cassa \u2014 ' + title + '<\/title>' +
-    '<script src="https:\/\/cdn.jsdelivr.net\/npm\/chart.js@4"><\/script>' +
-    '<style>' +
-    '*{box-sizing:border-box;margin:0;padding:0}' +
-    'body{font-family:"Segoe UI",Arial,sans-serif;background:#fff;padding:32px 40px;color:#111}' +
-    'h1{font-size:20px;font-weight:600;color:#1a1005;margin-bottom:4px}' +
-    '.meta{font-size:11px;color:#888;margin-bottom:28px;letter-spacing:.04em}' +
-    '.chart-wrap{width:100%;max-height:540px;position:relative}' +
-    '.btn-s{display:block;margin:28px auto 0;padding:10px 36px;background:#c9a84c;' +
-      'color:#fff;border:none;border-radius:3px;font-size:13px;cursor:pointer;font-weight:600;letter-spacing:.08em}' +
-    '.btn-s:hover{background:#b8953a}' +
-    '@media print{.btn-s{display:none}body{padding:16px}}' +
-    '<\/style><\/head><body>' +
-    '<h1>\uD83D\uDCCA ' + title + '<\/h1>' +
-    '<div class="meta">Libro Cassa &nbsp;\u00B7&nbsp; Stampato il ' + stampato + '<\/div>' +
-    '<div class="chart-wrap"><canvas id="c"><\/canvas><\/div>' +
-    '<button class="btn-s" onclick="window.print()">🖨 Stampa \/ Salva PDF<\/button>' +
-    '<script>new Chart(document.getElementById("c"),' + JSON.stringify(cfg) + ');<\/script>' +
-    '<\/body><\/html>');
-  w.document.close();
 }
 
 // ─── R1: Giorno settimana ─────────────────────────────────────
@@ -645,61 +503,95 @@ async function runR1() {
   const campo = document.getElementById('r1-c').value;
   const NOMI = ['Domenica','Lunedì','Martedì','Mercoledì','Giovedì','Venerdì','Sabato'];
   let yf = ''; const p = [parseInt(dow)];
-  if (anniS) { const a = anniS.split(',').map(x=>parseInt(x.trim())).filter(Boolean); p.push(a); yf = 'AND EXTRACT(YEAR FROM data)=ANY($2)'; }
-  const st = document.getElementById('r1-st');
-  st.innerHTML = '<span style="color:var(--text-dim)">⏳ Caricamento...</span>';
+  if (anniS) {
+    const anni = anniS.split(',').map(a => parseInt(a.trim())).filter(Boolean);
+    p.push(anni); yf = `AND EXTRACT(YEAR FROM data)=ANY($2)`;
+  }
   try {
     const [bY, det] = await Promise.all([
       sql(`SELECT EXTRACT(YEAR FROM data)::int AS anno, COUNT(*) AS n,
-        ROUND(SUM(${campo}),2) AS tot, ROUND(AVG(${campo}),2) AS avg
-        FROM incassi WHERE EXTRACT(DOW FROM data)=$1 ${yf}
+        ROUND(SUM(${campo}),2) AS tot, ROUND(AVG(${campo}),2) AS avg,
+        ROUND(MAX(${campo}),2) AS mx, ROUND(MIN(${campo}),2) AS mn,
+        SUM(cp)::int AS cp, SUM(cs)::int AS cs
+        FROM incassi_giornalieri WHERE EXTRACT(DOW FROM data)=$1 ${yf}
         AND ${campo} IS NOT NULL GROUP BY 1 ORDER BY 1`, p),
-      sql(`SELECT data, ${campo} AS val FROM incassi
-        WHERE EXTRACT(DOW FROM data)=$1 ${yf} AND ${campo} IS NOT NULL ORDER BY data`, p)
+      sql(`SELECT data,pranzo,cena,totale,cp,cs FROM incassi_giornalieri
+        WHERE EXTRACT(DOW FROM data)=$1 ${yf} ORDER BY data DESC LIMIT 300`, p)
     ]);
-    if (!bY.rows.length) { st.innerHTML='<span style="color:var(--red)">Nessun dato trovato.</span>'; return; }
-    window._CD[1] = {
-      title: 'Tutti i ' + NOMI[dow] + ' — ' + campo,
-      labels: bY.rows.map(r => String(r.anno)),
-      datasets: [
-        { label: 'Totale €', data: bY.rows.map(r => parseFloat(r.tot)||0) },
-        { label: 'Media €',  data: bY.rows.map(r => parseFloat(r.avg)||0) }
-      ],
-      scatterData: det.rows.map(r => ({ x: r.data.split('T')[0], y: parseFloat(r.val)||0 }))
-    };
-    st.innerHTML = '<span style="color:var(--green)">✓ ' + bY.rows.length + ' anni · ' + det.rows.length + ' giornate pronte per la stampa</span>';
-    document.getElementById('r1pb').classList.add('show');
-  } catch(e) { st.innerHTML = '<span style="color:var(--red)">✗ ' + e.message + '</span>'; }
+    if (!bY.rows.length) { document.getElementById('r1r').innerHTML='<div class="es">Nessun dato.</div>'; return; }
+    const totAll = bY.rows.reduce((s,r) => s+(+(r.tot||0)), 0);
+    const nAll   = bY.rows.reduce((s,r) => s+parseInt(r.n), 0);
+    let h = `<div class="orn">· · ·</div>
+    <h3 style="margin-bottom:12px">Tutti i ${NOMI[dow]} — ${campo}</h3>
+    <div class="sg">
+      <div class="sc"><div class="sl">Giornate</div><div class="sv">${nAll}</div></div>
+      <div class="sc"><div class="sl">Totale</div><div class="sv">${fmt(totAll)}</div><div class="ss">€</div></div>
+      <div class="sc"><div class="sl">Media/giorno</div><div class="sv">${fmt(totAll/nAll)}</div><div class="ss">€</div></div>
+    </div>
+    <h3 style="margin:20px 0 12px">Per anno</h3>
+    <div class="tw"><table><thead><tr><th>Anno</th><th class="r">N.</th><th class="r">Totale</th><th class="r">Media</th>
+    <th class="r" style="color:var(--green)">Max</th><th class="r" style="color:var(--red)">Min</th>
+    <th class="r">Cop.P</th><th class="r">Cop.S</th></tr></thead><tbody>`;
+    bY.rows.forEach(r => {
+      h += `<tr><td class="g"><span class="yb">${r.anno}</span></td>
+        <td class="r">${r.n}</td><td class="r">${fmt(r.tot)}</td><td class="r">${fmt(r.avg)}</td>
+        <td class="r" style="color:var(--green)">${fmt(r.mx)}</td>
+        <td class="r" style="color:var(--red)">${fmt(r.mn)}</td>
+        <td class="r d">${r.cp||'—'}</td><td class="r d">${r.cs||'—'}</td></tr>`;
+    });
+    h += `</tbody></table></div>
+    <h3 style="margin:20px 0 12px">Dettaglio (ultime 300)</h3>
+    <div class="tw"><table><thead><tr><th>Data</th><th class="r">${campo}</th>
+    <th class="r">Pranzo</th><th class="r">Cena</th><th class="r">CP</th><th class="r">CS</th>
+    </tr></thead><tbody>`;
+    det.rows.forEach(r => {
+      h += `<tr><td class="g">${fmtD(r.data)} <span class="tg ts">${NOMI[dow].slice(0,3)}</span></td>
+        <td class="r">${fmt(r[campo])}</td>
+        <td class="r d">${r.pranzo?fmt(r.pranzo):'—'}</td>
+        <td class="r d">${r.cena?fmt(r.cena):'—'}</td>
+        <td class="r d">${r.cp??'—'}</td><td class="r d">${r.cs??'—'}</td></tr>`;
+    });
+    h += '</tbody></table></div>';
+    document.getElementById('r1r').innerHTML = h;
+  } catch(e) { document.getElementById('r1r').innerHTML=`<div class="alert ae show">${e.message}</div>`; }
 }
 
 // ─── R2: Mensile ──────────────────────────────────────────────
 async function runR2() {
   const anniS = document.getElementById('r2-a').value.trim();
-  const mese = parseInt(document.getElementById('r2-m').value);
+  const mese  = parseInt(document.getElementById('r2-m').value);
   const MN = ['','Gen','Feb','Mar','Apr','Mag','Giu','Lug','Ago','Set','Ott','Nov','Dic'];
   let yf = '', mf = ''; const p = [];
-  if (anniS) { const a=anniS.split(',').map(x=>parseInt(x.trim())).filter(Boolean); p.push(a); yf='AND EXTRACT(YEAR FROM data)=ANY($'+p.length+')'; }
-  if (mese)  { p.push(mese); mf='AND EXTRACT(MONTH FROM data)=$'+p.length; }
-  const st = document.getElementById('r2-st');
-  st.innerHTML = '<span style="color:var(--text-dim)">⏳ Caricamento...</span>';
+  if (anniS) { const a=anniS.split(',').map(x=>parseInt(x.trim())).filter(Boolean); p.push(a); yf=`AND EXTRACT(YEAR FROM data)=ANY($${p.length})`; }
+  if (mese)  { p.push(mese); mf=`AND EXTRACT(MONTH FROM data)=$${p.length}`; }
   try {
     const r = await sql(`SELECT EXTRACT(YEAR FROM data)::int AS anno, EXTRACT(MONTH FROM data)::int AS mese,
-      ROUND(SUM(totale),2) AS tot
-      FROM incassi WHERE 1=1 ${yf} ${mf} AND totale IS NOT NULL
+      COUNT(*) AS giorni, ROUND(SUM(totale),2) AS tot, ROUND(AVG(totale),2) AS avg,
+      ROUND(SUM(pranzo),2) AS tp, ROUND(SUM(cena),2) AS tc,
+      SUM(cp)::int AS tcp, SUM(cs)::int AS tcs
+      FROM incassi_giornalieri WHERE 1=1 ${yf} ${mf}
       GROUP BY 1,2 ORDER BY 1,2`, p);
-    if (!r.rows.length) { st.innerHTML='<span style="color:var(--red)">Nessun dato.</span>'; return; }
-    const anni = [...new Set(r.rows.map(x=>x.anno))].sort();
-    const mesiP = [...new Set(r.rows.map(x=>x.mese))].sort((a,b)=>a-b);
-    const map = {}; r.rows.forEach(row => { map[row.anno+'_'+row.mese] = parseFloat(row.tot)||0; });
-    window._CD[2] = {
-      title: 'Confronto Mensile' + (mese ? ' — '+MN[mese] : ''),
-      labels: mesiP.map(m => MN[m]),
-      datasets: anni.map(anno => ({ label: String(anno), data: mesiP.map(m => map[anno+'_'+m]||0) })),
-      scatterData: r.rows.map((row,i) => ({ x: i, y: parseFloat(row.tot)||0 }))
-    };
-    st.innerHTML = '<span style="color:var(--green)">✓ ' + r.rows.length + ' mesi pronti per la stampa</span>';
-    document.getElementById('r2pb').classList.add('show');
-  } catch(e) { st.innerHTML='<span style="color:var(--red)">✗ '+e.message+'</span>'; }
+    if (!r.rows.length) { document.getElementById('r2r').innerHTML='<div class="es">Nessun dato.</div>'; return; }
+    let h = `<div class="orn">· · ·</div><div class="tw"><table>
+    <thead><tr><th>Anno</th><th>Mese</th><th class="r">Giorni</th>
+    <th class="r">Totale €</th><th class="r">Media/g</th>
+    <th class="r">Pranzo</th><th class="r">Cena</th>
+    <th class="r">Cop.P</th><th class="r">Cop.S</th></tr></thead><tbody>`;
+    let py='', gt=0;
+    r.rows.forEach(row => {
+      if (row.anno!==py&&py) h+='<tr><td colspan="9" style="padding:2px;border:none;background:var(--bg)"></td></tr>';
+      py=row.anno; gt+=+(row.tot||0);
+      h+=`<tr><td class="g"><span class="yb">${row.anno}</span></td>
+        <td>${MN[row.mese]}</td><td class="r d">${row.giorni}</td>
+        <td class="r" style="color:var(--gold)">${fmt(row.tot)}</td>
+        <td class="r">${fmt(row.avg)}</td>
+        <td class="r d">${fmt(row.tp)}</td><td class="r d">${fmt(row.tc)}</td>
+        <td class="r d">${row.tcp||'—'}</td><td class="r d">${row.tcs||'—'}</td></tr>`;
+    });
+    h+=`<tr class="tot"><td colspan="3">TOTALE</td><td class="r">${fmt(gt)}</td><td colspan="5"></td></tr>`;
+    h+='</tbody></table></div>';
+    document.getElementById('r2r').innerHTML = h;
+  } catch(e) { document.getElementById('r2r').innerHTML=`<div class="alert ae show">${e.message}</div>`; }
 }
 
 // ─── R3: Top days ─────────────────────────────────────────────
@@ -707,79 +599,94 @@ async function runR3() {
   const from=document.getElementById('r3-f').value, to=document.getElementById('r3-t').value;
   const n=parseInt(document.getElementById('r3-n').value)||20;
   const ord=document.getElementById('r3-o').value;
+  const DN=['Dom','Lun','Mar','Mer','Gio','Ven','Sab'];
   let wh='WHERE totale IS NOT NULL'; const p=[];
-  if(from){p.push(from);wh+=' AND data>=$'+p.length;}
-  if(to){p.push(to);wh+=' AND data<=$'+p.length;}
+  if(from){p.push(from);wh+=` AND data>=$${p.length}`;}
+  if(to){p.push(to);wh+=` AND data<=$${p.length}`;}
   p.push(n);
-  const st=document.getElementById('r3-st');
-  st.innerHTML='<span style="color:var(--text-dim)">⏳ Caricamento...</span>';
   try {
-    const r=await sql(`SELECT data,totale FROM incassi ${wh}
-      ORDER BY totale ${ord} NULLS LAST LIMIT $${p.length}`,p);
-    if(!r.rows.length){st.innerHTML='<span style="color:var(--red)">Nessun dato.</span>';return;}
-    window._CD[3]={
-      title:'Top/Worst '+n+' Giorni — '+(ord==='DESC'?'Migliori':'Peggiori'),
-      labels:r.rows.map(row=>fmtD(row.data)),
-      datasets:[{label:'Totale €',data:r.rows.map(row=>parseFloat(row.totale)||0)}],
-      scatterData:r.rows.map((row,i)=>({x:i+1,y:parseFloat(row.totale)||0}))
-    };
-    st.innerHTML='<span style="color:var(--green)">✓ '+r.rows.length+' giornate pronte per la stampa</span>';
-    document.getElementById('r3pb').classList.add('show');
-  } catch(e){st.innerHTML='<span style="color:var(--red)">✗ '+e.message+'</span>';}
+    const r = await sql(`SELECT data,totale,pranzo,cena,cp,cs,note,
+      EXTRACT(DOW FROM data)::int AS dow
+      FROM incassi_giornalieri ${wh}
+      ORDER BY totale ${ord} NULLS LAST LIMIT $${p.length}`, p);
+    if (!r.rows.length) { document.getElementById('r3r').innerHTML='<div class="es">Nessun dato.</div>'; return; }
+    let h=`<div class="orn">· · ·</div><div class="tw"><table>
+    <thead><tr><th>#</th><th>Data</th><th>Gg</th>
+    <th class="r">Totale</th><th class="r">Pranzo</th><th class="r">Cena</th>
+    <th class="r">CP</th><th class="r">CS</th><th>Note</th></tr></thead><tbody>`;
+    r.rows.forEach((row,i)=>{
+      const dw=DN[row.dow];
+      const md=i===0?(ord==='DESC'?'<span class="tg tb">★ 1°</span>':'<span class="tg tw2">▼ 1°</span>'):'';
+      h+=`<tr><td class="d">${i+1}</td>
+        <td class="g">${fmtD(row.data)} ${md}</td>
+        <td>${dw==='Dom'?'<span class="tg ts">Dom</span>':dw}</td>
+        <td class="r" style="color:var(--gold)">${fmt(row.totale)}</td>
+        <td class="r d">${row.pranzo?fmt(row.pranzo):'—'}</td>
+        <td class="r d">${row.cena?fmt(row.cena):'—'}</td>
+        <td class="r d">${row.cp??'—'}</td><td class="r d">${row.cs??'—'}</td>
+        <td class="d" style="max-width:140px;overflow:hidden;text-overflow:ellipsis">${row.note||''}</td></tr>`;
+    });
+    h+='</tbody></table></div>';
+    document.getElementById('r3r').innerHTML=h;
+  } catch(e) { document.getElementById('r3r').innerHTML=`<div class="alert ae show">${e.message}</div>`; }
 }
 
-// ─── R4: Annuale ──────────────────────────────────────────────
+// ─── R4: Annuale ─────────────────────────────────────────────
 async function runR4() {
   const anno=document.getElementById('r4-a').value.trim();
-  const p=[]; let wh='WHERE totale IS NOT NULL';
-  if(anno){p.push(parseInt(anno));wh+=' AND EXTRACT(YEAR FROM data)=$1';}
-  const st=document.getElementById('r4-st');
-  st.innerHTML='<span style="color:var(--text-dim)">⏳ Caricamento...</span>';
+  const p=[]; let wh='WHERE 1=1';
+  if(anno){p.push(parseInt(anno)); wh+=` AND EXTRACT(YEAR FROM data)=$1`;}
   try {
-    const r=await sql(`SELECT EXTRACT(YEAR FROM data)::int AS anno,
-      ROUND(SUM(totale),2) AS tot, ROUND(AVG(totale),2) AS avg,
-      ROUND(SUM(pranzo),2) AS tp, ROUND(SUM(cena),2) AS tc
-      FROM incassi ${wh} GROUP BY 1 ORDER BY 1`,p);
-    if(!r.rows.length){st.innerHTML='<span style="color:var(--red)">Nessun dato.</span>';return;}
-    window._CD[4]={
-      title:'Riepilogo Annuale'+(anno?' — '+anno:''),
-      labels:r.rows.map(r=>String(r.anno)),
-      datasets:[
-        {label:'Totale €',  data:r.rows.map(r=>parseFloat(r.tot)||0)},
-        {label:'Media/g €', data:r.rows.map(r=>parseFloat(r.avg)||0)},
-        {label:'Pranzo €',  data:r.rows.map(r=>parseFloat(r.tp)||0)},
-        {label:'Cena €',    data:r.rows.map(r=>parseFloat(r.tc)||0)}
-      ],
-      scatterData:r.rows.map(r=>({x:String(r.anno),y:parseFloat(r.tot)||0}))
-    };
-    st.innerHTML='<span style="color:var(--green)">✓ '+r.rows.length+' anni pronti per la stampa</span>';
-    document.getElementById('r4pb').classList.add('show');
-  } catch(e){st.innerHTML='<span style="color:var(--red)">✗ '+e.message+'</span>';}
+    const r = await sql(`SELECT EXTRACT(YEAR FROM data)::int AS anno,
+      COUNT(*) AS giorni, ROUND(SUM(totale),2) AS tot, ROUND(AVG(totale),2) AS avg,
+      ROUND(MAX(totale),2) AS mx, ROUND(MIN(totale),2) AS mn,
+      ROUND(SUM(pranzo),2) AS tp, ROUND(SUM(cena),2) AS tc,
+      ROUND(SUM(pos),2) AS tpos, ROUND(SUM(cassa),2) AS tcassa, ROUND(SUM(banca),2) AS tbanca,
+      SUM(cp)::int AS tcp, SUM(cs)::int AS tcs,
+      ROUND(AVG(media_p),2) AS avmp, ROUND(AVG(media_s),2) AS avms
+      FROM incassi_giornalieri ${wh} GROUP BY 1 ORDER BY 1`, p);
+    if(!r.rows.length){document.getElementById('r4r').innerHTML='<div class="es">Nessun dato.</div>';return;}
+    let h='<div class="orn">· · ·</div>';
+    r.rows.forEach(row=>{
+      h+=`<div style="margin-bottom:32px">
+        <h3><span class="yb">${row.anno}</span></h3>
+        <div class="sg" style="margin-top:16px">
+          <div class="sc"><div class="sl">Giorni apertura</div><div class="sv">${row.giorni}</div></div>
+          <div class="sc"><div class="sl">Totale anno</div><div class="sv" style="font-size:18px">${fmt(row.tot)}</div><div class="ss">€</div></div>
+          <div class="sc"><div class="sl">Media/giorno</div><div class="sv">${fmt(row.avg)}</div><div class="ss">€</div></div>
+          <div class="sc"><div class="sl">Miglior giorno</div><div class="sv" style="color:var(--green);font-size:18px">${fmt(row.mx)}</div></div>
+          <div class="sc"><div class="sl">Peggior giorno</div><div class="sv" style="color:var(--red);font-size:18px">${fmt(row.mn)}</div></div>
+          <div class="sc"><div class="sl">Scontr. medio P</div><div class="sv">${fmt(row.avmp)}</div><div class="ss">€/cop.</div></div>
+          <div class="sc"><div class="sl">Scontr. medio S</div><div class="sv">${fmt(row.avms)}</div><div class="ss">€/cop.</div></div>
+        </div>
+        <div class="tw"><table>
+          <thead><tr><th>Pranzo tot</th><th>Cena tot</th><th>POS tot</th><th>Cassa tot</th><th>Banca tot</th><th>Cop.P tot</th><th>Cop.S tot</th></tr></thead>
+          <tbody><tr>
+            <td class="r">${fmt(row.tp)}</td><td class="r">${fmt(row.tc)}</td>
+            <td class="r d">${fmt(row.tpos)}</td><td class="r d">${fmt(row.tcassa)}</td><td class="r d">${fmt(row.tbanca)}</td>
+            <td class="r d">${row.tcp||'—'}</td><td class="r d">${row.tcs||'—'}</td>
+          </tr></tbody>
+        </table></div>
+      </div>`;
+    });
+    document.getElementById('r4r').innerHTML=h;
+  } catch(e) { document.getElementById('r4r').innerHTML=`<div class="alert ae show">${e.message}</div>`; }
 }
 
 // ─── R5: Custom SQL ───────────────────────────────────────────
 async function runR5() {
-  const q=document.getElementById('r5-q').value.trim();
-  if(!q) return;
-  const st=document.getElementById('r5-st');
-  st.innerHTML='<span style="color:var(--text-dim)">⏳ Caricamento...</span>';
+  const q = document.getElementById('r5-q').value.trim();
+  if (!q) return;
   try {
-    const r=await sql(q);
-    if(!r.rows?.length){st.innerHTML='<span style="color:var(--red)">Nessun risultato.</span>';return;}
-    const fields=r.fields.map(f=>f.name);
-    // Detect numeric fields
-    const numF=fields.filter(f=>{const v=r.rows.find(row=>row[f]!=null)?.[f]; return v!=null&&!isNaN(parseFloat(v))&&typeof v!=='boolean';});
-    const lblF=fields.find(f=>!numF.includes(f))||fields[0];
-    const valF=numF.length?numF.slice(0,4):[fields[1]];
-    window._CD[5]={
-      title:'Query SQL Libera',
-      labels:r.rows.map(row=>String(row[lblF]??'—')),
-      datasets:valF.map(f=>({label:f,data:r.rows.map(row=>parseFloat(row[f])||0)})),
-      scatterData:r.rows.map((row,i)=>({x:i,y:parseFloat(row[valF[0]])||0}))
-    };
-    st.innerHTML='<span style="color:var(--green)">✓ '+r.rowCount+' righe — '+lblF+' vs '+valF.join(', ')+'</span>';
-    document.getElementById('r5pb').classList.add('show');
-  } catch(e){st.innerHTML='<span style="color:var(--red)">✗ '+e.message+'</span>';}
+    const r = await sql(q);
+    if (!r.rows?.length) { document.getElementById('r5r').innerHTML='<div class="es" style="padding:20px">Nessun risultato.</div>'; return; }
+    const fields = r.fields.map(f => f.name);
+    let h=`<div class="tw" style="margin-top:16px"><table>
+    <thead><tr>${fields.map(f=>'<th>'+f+'</th>').join('')}</tr></thead><tbody>`;
+    r.rows.forEach(row=>{ h+='<tr>'+fields.map(f=>`<td class="r">${row[f]??'—'}</td>`).join('')+'</tr>'; });
+    h+=`</tbody></table><div class="d" style="padding:8px 12px">${r.rowCount} righe</div></div>`;
+    document.getElementById('r5r').innerHTML=h;
+  } catch(e) { document.getElementById('r5r').innerHTML=`<div class="alert ae show" style="margin-top:12px">${e.message}</div>`; }
 }
 
 // ─── UTILS ────────────────────────────────────────────────────
@@ -795,6 +702,49 @@ function fmtD(iso) {
 function copySQL() {
   navigator.clipboard.writeText(document.getElementById('sql-schema').innerText)
     .then(() => showA('ca','as','SQL copiato negli appunti!'));
+}
+
+// ─── LOAD DAY ─────────────────────────────────────────────────
+const DN2 = ['Dom','Lun','Mar','Mer','Gio','Ven','Sab'];
+async function loadDay(d) {
+  const badge = document.getElementById('day-badge');
+  if (!d) { badge.innerHTML = ''; return; }
+  badge.innerHTML = '<span style="color:var(--text-dim)">⏳ Ricerca...</span>';
+  try {
+    const r = await sql(
+      'SELECT * FROM incassi WHERE data=$1', [d]
+    );
+    if (!r.rows.length) {
+      // New day — clear fields, show label
+      ['f-pranzo','f-cena','f-totale','f-corrisp','f-pos','f-banca','f-cassa','f-ft','f-cp','f-cs','f-mp','f-ms','f-note']
+        .forEach(id => { document.getElementById(id).value = ''; });
+      const dow = new Date(d + 'T12:00:00').getDay();
+      badge.innerHTML = '<span style="color:var(--text-dim)">' + DN2[dow] + ' &mdash; giornata nuova</span>';
+      hideA('ia');
+    } else {
+      // Existing record — populate all fields
+      const row = r.rows[0];
+      const set = (id, val) => { document.getElementById(id).value = val != null ? val : ''; };
+      set('f-pranzo',  row.pranzo);
+      set('f-cena',    row.cena);
+      set('f-totale',  row.totale);
+      set('f-corrisp', row.corrisp);
+      set('f-pos',     row.pos);
+      set('f-banca',   row.banca);
+      set('f-cassa',   row.cassa);
+      set('f-ft',      row.ft);
+      set('f-cp',      row.cp);
+      set('f-cs',      row.cs);
+      set('f-mp',      row.media_p);
+      set('f-ms',      row.media_s);
+      document.getElementById('f-note').value = row.note || '';
+      const dow = new Date(d + 'T12:00:00').getDay();
+      const tot = row.totale != null ? ' &mdash; totale <strong style="color:var(--gold)">\u20AC ' + parseFloat(row.totale).toLocaleString('it-IT',{minimumFractionDigits:2}) + '</strong>' : '';
+      badge.innerHTML = '<span style="color:var(--green)">\u2713 ' + DN2[dow] + ' &mdash; record esistente' + tot + '</span>';
+    }
+  } catch(e) {
+    badge.innerHTML = '<span style="color:var(--red)">\u2717 ' + e.message + '</span>';
+  }
 }
 
 // ─── INIT ─────────────────────────────────────────────────────
