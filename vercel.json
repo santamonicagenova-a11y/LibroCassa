@@ -1,0 +1,11 @@
+{
+  "rewrites": [
+    { "source": "/api/sql", "destination": "/api/sql" }
+  ],
+  "functions": {
+    "api/sql.js": {
+      "memory": 128,
+      "maxDuration": 10
+    }
+  }
+}
