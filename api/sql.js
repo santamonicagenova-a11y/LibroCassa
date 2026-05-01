@@ -1,8 +1,6 @@
 // api/sql.js — Vercel Serverless Function (CommonJS)
 // Proxy sicuro tra browser e Neon Postgres HTTP API.
-// Le credenziali non vengono mai esposte al browser.
  
-// Dice esplicitamente a Vercel di parsare il body JSON
 module.exports.config = {
   api: { bodyParser: true },
 };
@@ -15,14 +13,11 @@ module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   if (req.method === 'OPTIONS') return res.status(200).end();
  
-  // ── Metodo ────────────────────────────────────────────
   if (req.method !== 'POST') {
     return res.status(405).json({ message: 'Method not allowed' });
   }
  
   // ── Body parsing robusto ──────────────────────────────
-  // Vercel di solito parsa automaticamente, ma per sicurezza gestiamo
-  // anche il caso in cui il body arrivi come stringa grezza.
   let body = req.body;
   if (typeof body === 'string') {
     try { body = JSON.parse(body); } catch (_) { body = {}; }
@@ -48,14 +43,18 @@ module.exports = async function handler(req, res) {
     return res.status(500).json({
       message:
         'Variabili ambiente mancanti su Vercel. ' +
-        'Vai su Vercel → Settings → Environment Variables e aggiungi ' +
-        'NEON_HOST, NEON_USER, NEON_PASS, NEON_DB — poi fai Redeploy.',
+        'Aggiungi NEON_HOST, NEON_USER, NEON_PASS, NEON_DB e fai Redeploy.',
     });
   }
  
-  // ── Chiamata a Neon HTTP API ──────────────────────────
-  const auth    = Buffer.from(`${user}:${pass}`).toString('base64');
-  const connStr = `postgresql://${user}:${pass}@${host}/${db}?sslmode=require`;
+  // ── Encoding sicuro delle credenziali ────────────────
+  // encodeURIComponent gestisce caratteri speciali (@, #, !, ecc.)
+  const encodedUser = encodeURIComponent(user);
+  const encodedPass = encodeURIComponent(pass);
+  const connStr = `postgresql://${encodedUser}:${encodedPass}@${host}/${db}?sslmode=require`;
+ 
+  // Basic Auth: valori RAW perché Base64 li gestisce nativamente
+  const auth = Buffer.from(`${user}:${pass}`).toString('base64');
  
   try {
     const neonRes = await fetch(`https://${host}/sql`, {
