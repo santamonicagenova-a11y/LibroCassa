@@ -97,15 +97,15 @@
   <span>Budget Ristorante · Vercel + Neon</span>
 </header>
 <nav>
-  <button class="active" onclick="sw('setup',this)">⚙ Config</button>
-  <button onclick="sw('insert',this)">✏ Inserimento</button>
+  <button class="active" onclick="sw('insert',this)">✏ Inserimento</button>
   <button onclick="sw('list',this)">📋 Registro</button>
   <button onclick="sw('reports',this)">📊 Report</button>
+  <button onclick="sw('setup',this)">⚙ Config</button>
 </nav>
 <main>
 
 <!-- ══ SETUP ══ -->
-<div id="tab-setup" class="tab-pane active">
+<div id="tab-setup" class="tab-pane">
   <h2>Configurazione</h2>
   <p class="subtitle">La pagina gira su Vercel e chiama il database Neon tramite una funzione serverless — nessuna credenziale nel browser.</p>
 
@@ -214,7 +214,7 @@
 </div>
 
 <!-- ══ INSERT ══ -->
-<div id="tab-insert" class="tab-pane">
+<div id="tab-insert" class="tab-pane active">
   <h2>Inserimento Giornata</h2>
   <p class="subtitle">Registra gli incassi per una singola giornata. Se la data esiste già, il record viene aggiornato.</p>
   <div id="ia" class="alert"></div>
